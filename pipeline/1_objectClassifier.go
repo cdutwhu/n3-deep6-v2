@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/nats-io/nuid"
 	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	"github.com/nats-io/nuid"
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 )
@@ -23,19 +23,18 @@ import (
 // data model, unique id etc.
 //
 // ctx - context to manage the pipeline
-// in - channel providing map[string]interface{} containing
-// the json data
+// in - channel providing json string
 //
-func objectClassifier(ctx context.Context, filePath string, in <-chan map[string]interface{}) (
+func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 	<-chan st.IngestData, // emits IngestData objects with classification elements
 	<-chan error, // emits errors encountered to the pipeline manager
 	error) { // any error encountered when creating this component
 
-	out := make(chan st.IngestData)
-	errc := make(chan error, 1)
+	cOut := make(chan st.IngestData)
+	cErr := make(chan error, 1)
 
 	// load the classifier definitions;
-	// each data-model type characterised by properties of the
+	// each data-model type characterized by properties of the
 	// json data.
 	//
 	type classifier struct {
@@ -55,13 +54,16 @@ func objectClassifier(ctx context.Context, filePath string, in <-chan map[string
 	}
 
 	go func() {
-		defer close(out)
-		defer close(errc)
-		for jsonMap := range in { // read json object (map) from upstream source
+		defer close(cOut)
+		defer close(cErr)
 
-			rawJson, err := json.Marshal(jsonMap) // we need json bytes for use with gjson
-			if err != nil {
-				errc <- errors.Wrap(err, "json marshal error")
+		for jsonStr := range in { // read json object (string) from upstream source
+
+			rawJson := []byte(jsonStr)
+
+			jsonMap := make(map[string]interface{})
+			if err := json.Unmarshal(rawJson, &jsonMap); err != nil {
+				cErr <- errors.Wrap(err, "json Unmarshal error")
 				return
 			}
 
@@ -69,6 +71,7 @@ func objectClassifier(ctx context.Context, filePath string, in <-chan map[string
 			classified := false
 			var dataModel, objectType, n3id, unique string
 			var links, uniqueVals []string
+
 			//
 			// check the data by comparing with the known
 			// classification attributes from the config
@@ -129,7 +132,6 @@ func objectClassifier(ctx context.Context, filePath string, in <-chan map[string
 				objectType = keys[0]
 			} else {
 				objectType = dataModel
-
 			}
 
 			//
@@ -146,16 +148,15 @@ func objectClassifier(ctx context.Context, filePath string, in <-chan map[string
 			igd.LinkSpecs = links
 			igd.RawData = jsonMap
 			igd.UniqueValues = uniqueVals
+			igd.RawBytes = rawJson
 
 			select {
-			case out <- igd: // pass the data package on to the next stage
+			case cOut <- igd: // pass the data package on to the next stage
 			case <-ctx.Done(): // listen for pipeline shutdown
 				return
 			}
-
 		}
 	}()
 
-	return out, errc, nil
-
+	return cOut, cErr, nil
 }
