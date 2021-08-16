@@ -2,6 +2,8 @@
 
 package deep6
 
+import "fmt"
+
 //
 // structure used by the ingest pipeline to
 // pass original data and derived data between
@@ -14,6 +16,11 @@ package deep6
 // for more details.
 //
 type IngestData struct {
+	//
+	// Classified indicate this ingested data instance
+	// has been classified
+	//
+	Classified bool
 	//
 	// Unique id for the object being processed
 	// will be derived from the inbound json object
@@ -88,4 +95,20 @@ type IngestData struct {
 	// rest of the graph
 	//
 	LinkTriples []Triple
+}
+
+func (igd *IngestData) Print(msg interface{}) {
+	fmt.Printf("------------------------------------%v\n", msg)
+	fmt.Println("Classified:", igd.Classified)
+	fmt.Println("N3id:", igd.N3id)
+	fmt.Println("Type:", igd.Type)
+	fmt.Println("DataModel:", igd.DataModel)
+	fmt.Println("Bytes length:", len(igd.RawBytes))
+	fmt.Println("The 1st level map length", len(igd.RawData))
+	fmt.Println("LinkSpecs:", igd.LinkSpecs)
+	fmt.Println("Unique:", igd.Unique)
+	fmt.Println("UniqueValues:", igd.UniqueValues)
+	fmt.Println("LinkCandidates:", igd.LinkCandidates)
+	fmt.Println("Triples:", igd.Triples)
+	fmt.Println("LinkTriples:", igd.LinkTriples)
 }

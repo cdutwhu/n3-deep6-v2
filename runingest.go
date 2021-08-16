@@ -2,8 +2,8 @@ package deep6
 
 import (
 	"context"
-	"fmt"
 	"io"
+	"time"
 
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	jt "github.com/digisan/json-tool"
@@ -50,17 +50,19 @@ func runIngestWithReader(r io.Reader, folderPath string) error {
 	}
 	cErrList = append(cErrList, cErr)
 
-	go func() {
-		for c := range cClassOut {
-			fmt.Println(c.N3id)
-		}
-	}()
-
 	// remObjOut, errc, err := objectRemover(ctx, db, wb, sbf, auditLevel, folderPath, classOut)
 	// if err != nil {
 	// 	return errors.Wrap(err, "Error: cannot create object-remover component: ")
 	// }
 	// errcList = append(errcList, errc)
+
+	go func() {
+		I := 1
+		for c := range cClassOut {
+			c.Print(I)
+			I++
+		}
+	}()
 
 	// genOut, errc, err := tupleGenerator(ctx, remObjOut)
 	// if err != nil {
@@ -106,6 +108,8 @@ func runIngestWithReader(r io.Reader, folderPath string) error {
 
 	// monitor progress
 	err = pl.WaitForPipeline(cErrList...)
+
+	time.Sleep(1 * time.Second)
 
 	return err
 }

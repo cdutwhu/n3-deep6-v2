@@ -37,17 +37,15 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 	// each data-model type characterized by properties of the
 	// json data.
 	//
-	type classifier struct {
-		Data_model     string
-		Required_paths []string
-		N3id           string
-		Links          []string
-		Unique         []string
+	var c struct {
+		Classifier []struct {
+			Data_model     string   // DataMode / Type?
+			Required_paths []string // Classified
+			N3id           string   // N3id
+			Links          []string // LinkSpecs
+			Unique         []string // Unique
+		}
 	}
-	type classifiers struct {
-		Classifier []classifier
-	}
-	var c classifiers
 	classifierFile := fmt.Sprintf("%s/config/datatypes.toml", filePath)
 	if _, err := toml.DecodeFile(classifierFile, &c); err != nil {
 		return nil, nil, err
@@ -57,7 +55,14 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 		defer close(cOut)
 		defer close(cErr)
 
+		// I := 1
+
 		for jsonStr := range in { // read json object (string) from upstream source
+
+			// if I == 5 {
+			// 	fmt.Println(I)
+			// }
+			// I++
 
 			rawJson := []byte(jsonStr)
 
@@ -67,29 +72,39 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 				return
 			}
 
-			igd := st.IngestData{}
-			classified := false
-			var dataModel, objectType, n3id, unique string
-			var links, uniqueVals []string
+			var unique string
+
+			// 12 fields
+			igd := st.IngestData{
+				Classified:   false,
+				N3id:         nuid.Next(),
+				DataModel:    "JSON",
+				Type:         "JSON",
+				RawData:      jsonMap,
+				RawBytes:     rawJson,
+				UniqueValues: []string{},
+				Unique:       "",
+				LinkSpecs:    []string{},
+			}
 
 			//
 			// check the data by comparing with the known
 			// classification attributes from the config
 			//
 			for _, classifier := range c.Classifier {
-				// extract the fields required for a synthetic unique id
-				// if specified
+
+				// extract the fields required for a synthetic unique id if specified
 				if len(classifier.Unique) > 0 {
 					results := gjson.GetManyBytes(rawJson, classifier.Unique...)
-					uniqueVals = make([]string, 0)
 					for _, r := range results {
 						if r.Exists() {
-							uniqueVals = append(uniqueVals, r.String())
+							igd.UniqueValues = append(igd.UniqueValues, r.String())
 						}
 					}
-					unique = strings.Join(uniqueVals, "-")
+					unique = strings.Join(igd.UniqueValues, "-")
 				}
-				// now apply classification
+
+				// now apply classification by 'required_paths'
 				results := gjson.GetManyBytes(rawJson, classifier.Required_paths...)
 				found := 0
 				for _, r := range results {
@@ -98,57 +113,41 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 					}
 				}
 				if len(classifier.Required_paths) == found {
-					classified = true
+					igd.Classified = true
 				}
-				if classified {
-					// find the unique identifier for this object
-					// if no id available use a nuid
+
+				if igd.Classified {
+					// find the unique identifier for this object if no id available use a nuid
 					result := gjson.GetBytes(rawJson, classifier.N3id)
 					if result.Exists() {
-						n3id = result.String()
-					} else {
-						n3id = nuid.Next()
+						igd.N3id = result.String()
 					}
-					dataModel = classifier.Data_model
-					// collect link fields for this data type
-					links = classifier.Links
+					igd.DataModel = classifier.Data_model
+					igd.Type = igd.DataModel
+					igd.LinkSpecs = classifier.Links
 					break
 				}
-			}
-
-			// default if model isn't classified
-			if !classified {
-				dataModel = "JSON"
 			}
 
 			// set the object type
 			// if only 1 top level key, derive object type from it (SIF)
 			// otherwise default to the datamodel as type (eg. xAPI)
 			keys := []string{}
-			for k := range jsonMap {
+			for k := range igd.RawData {
 				keys = append(keys, k)
 			}
 			if len(keys) == 1 {
-				objectType = keys[0]
-			} else {
-				objectType = dataModel
+				igd.Type = keys[0]
 			}
 
 			//
 			// store metadata back into the map itself
 			//
-			jsonMap["is-a"] = objectType
+			igd.RawData["is-a"] = igd.Type
 			if len(unique) > 0 {
-				jsonMap["unique"] = unique
+				igd.RawData["unique"] = unique
 				igd.Unique = unique
 			}
-			igd.DataModel = dataModel
-			igd.Type = objectType
-			igd.N3id = n3id
-			igd.LinkSpecs = links
-			igd.RawData = jsonMap
-			igd.UniqueValues = uniqueVals
-			igd.RawBytes = rawJson
 
 			select {
 			case cOut <- igd: // pass the data package on to the next stage
