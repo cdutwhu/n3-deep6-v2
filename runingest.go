@@ -6,6 +6,7 @@ import (
 	"time"
 
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
+	"github.com/digisan/data-block/store"
 	jt "github.com/digisan/json-tool"
 	"github.com/pkg/errors"
 )
@@ -25,7 +26,7 @@ import (
 // r - the io.Reader (file, http body etc.) to be ingested
 // auditLevel - one of: none, basic, high
 //
-func runIngestWithReader(r io.Reader, folderPath string) error {
+func runIngestWithReader(r io.Reader, kv *store.KVStorage, folderPath string) error {
 
 	// set up a context to manage ingest pipeline
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -56,25 +57,25 @@ func runIngestWithReader(r io.Reader, folderPath string) error {
 	// }
 	// errcList = append(errcList, errc)
 
+	cTripleOut, cErr, err := pl.TupleGenerator(ctx, cClassOut) // 2)
+	if err != nil {
+		return errors.Wrap(err, "Error: cannot create tuple-generator component: ")
+	}
+	cErrList = append(cErrList, cErr)
+
+	cWriterOut, cErr, err := pl.TripleWriter(ctx, kv, cTripleOut) // 3)
+	if err != nil {
+		return errors.Wrap(err, "Error: cannot create triple-writer component: ")
+	}
+	cErrList = append(cErrList, cErr)
+
 	go func() {
 		I := 1
-		for c := range cClassOut {
+		for c := range cWriterOut {
 			c.Print(I)
 			I++
 		}
 	}()
-
-	// genOut, errc, err := tupleGenerator(ctx, remObjOut)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Error: cannot create tuple-generator component: ")
-	// }
-	// errcList = append(errcList, errc)
-
-	// writerOut, errc, err := tripleWriter(ctx, wb, genOut)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Error: cannot create triple-writer component: ")
-	// }
-	// errcList = append(errcList, errc)
 
 	// linkerOut, errc, err := linkParser(ctx, sbf, writerOut)
 	// if err != nil {
@@ -109,7 +110,7 @@ func runIngestWithReader(r io.Reader, folderPath string) error {
 	// monitor progress
 	err = pl.WaitForPipeline(cErrList...)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 
 	return err
 }

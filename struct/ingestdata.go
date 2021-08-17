@@ -108,7 +108,17 @@ func (igd *IngestData) Print(msg interface{}) {
 	fmt.Println("LinkSpecs:", igd.LinkSpecs)
 	fmt.Println("Unique:", igd.Unique)
 	fmt.Println("UniqueValues:", igd.UniqueValues)
-	fmt.Println("LinkCandidates:", igd.LinkCandidates)
-	fmt.Println("Triples:", igd.Triples)
-	fmt.Println("LinkTriples:", igd.LinkTriples)
+	//
+	fmt.Println("Triples:")
+	for _, t := range igd.Triples {
+		fmt.Println("	", t)
+	}
+	fmt.Println("LinkCandidates:")
+	for _, t := range igd.LinkCandidates {
+		fmt.Println("	", t)
+	}
+	fmt.Println("LinkTriples:")
+	for _, t := range igd.LinkTriples {
+		fmt.Println("	", t)
+	}
 }

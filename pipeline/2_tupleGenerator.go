@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	jt "github.com/digisan/json-tool"
 	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	jt "github.com/digisan/json-tool"
 )
 
 //
@@ -15,25 +15,29 @@ import (
 // ctx - context used for pipeline management
 // in - channel providing IngestData objects
 //
-func tupleGenerator(ctx context.Context, in <-chan st.IngestData) (
+func TupleGenerator(ctx context.Context, in <-chan st.IngestData) (
 	<-chan st.IngestData,
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // any error encountered when creating this component
 
-	out := make(chan st.IngestData)
-	errc := make(chan error, 1)
+	cOut := make(chan st.IngestData)
+	cErr := make(chan error, 1)
 
 	go func() {
-		defer close(out)
-		defer close(errc)
+		defer close(cOut)
+		defer close(cErr)
 
 		for igd := range in {
 
 			var err error
-			igd.RawData, err = jt.Flatten(igd.RawBytes) // turn json into predicate:object pairs
+			igd.RawData, err = jt.Flatten(igd.RawBytes) // turn json m into predicate:object pairs
 			if err != nil {
-				errc <- err
+				cErr <- err
 			}
+
+			// re-append additional info like 'is-a', 'unique' from previous step
+			igd.RawData["is-a"] = igd.Type
+			igd.RawData["unique"] = igd.Unique
 
 			// create list of subject:predicate:object triples
 			tuples := make([]st.Triple, 0)
@@ -49,12 +53,12 @@ func tupleGenerator(ctx context.Context, in <-chan st.IngestData) (
 			igd.Triples = tuples
 
 			select {
-			case out <- igd: // pass the data on to the next stage
+			case cOut <- igd: // pass the data on to the next stage
 			case <-ctx.Done(): // listen for pipeline shutdown
 				return
 			}
 		}
 	}()
 
-	return out, errc, nil
+	return cOut, cErr, nil
 }
