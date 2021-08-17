@@ -6,6 +6,7 @@ import (
 	"time"
 
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/digisan/data-block/store"
 	jt "github.com/digisan/json-tool"
 	"github.com/pkg/errors"
@@ -26,7 +27,7 @@ import (
 // r - the io.Reader (file, http body etc.) to be ingested
 // auditLevel - one of: none, basic, high
 //
-func runIngestWithReader(r io.Reader, kv *store.KVStorage, folderPath string) error {
+func runIngestWithReader(r io.Reader, kv *store.KVStorage, db *badger.DB, folderPath string) error {
 
 	// set up a context to manage ingest pipeline
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -63,7 +64,7 @@ func runIngestWithReader(r io.Reader, kv *store.KVStorage, folderPath string) er
 	}
 	cErrList = append(cErrList, cErr)
 
-	cWriterOut, cErr, err := pl.TripleWriter(ctx, kv, cTripleOut) // 3)
+	cWriterOut, cErr, err := pl.TripleWriter(ctx, kv, db, cTripleOut) // 3)
 	if err != nil {
 		return errors.Wrap(err, "Error: cannot create triple-writer component: ")
 	}
