@@ -1,4 +1,4 @@
-package deep6
+package datastruct
 
 // SeisDB is a Hexastore based on this paper
 // http://www.vldb.org/pvldb/1/1453965.pdf

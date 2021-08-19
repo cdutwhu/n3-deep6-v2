@@ -1,4 +1,4 @@
-package deep6
+package pipeline
 
 import (
 	"fmt"
@@ -9,9 +9,14 @@ import (
 )
 
 const sep = "|"
+const idPrefix = "s|"
+
+// func idPrefix() string {
+// 	return fmt.Sprintf("s%s", sep)
+// }
 
 func id4v(id string) string {
-	return fmt.Sprintf("s%[1]s%[2]s", sep, id)
+	return fmt.Sprintf("%s%s", idPrefix, id)
 }
 
 func setVer(id string, ver int64, m *impl.M) *impl.M {
@@ -37,4 +42,16 @@ func nextVer(id string, db *badger.DB) (int64, error) {
 		return -1, err
 	}
 	return cv + 1, nil
+}
+
+func AllObjIDs(db *badger.DB) (ids []string, err error) {
+	m, err := dbset.BadgerSearchByPrefix(db, idPrefix, func(v interface{}) bool { return v.(int64) > 0 })
+	if err != nil {
+		return nil, err
+	}
+	i := len(idPrefix)
+	for k := range m {
+		ids = append(ids, k.(string)[i:])
+	}
+	return
 }

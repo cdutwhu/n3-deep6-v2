@@ -1,10 +1,10 @@
-package deep6
+package pipeline
 
 import (
 	"context"
 	"strings"
 
-	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
 )
 
 //
@@ -14,12 +14,12 @@ import (
 // sbf - bloom filter used to capture required link fields between objects
 // in - channel providing IngestData objects
 //
-func LinkParser(ctx context.Context, in <-chan st.IngestData) (
-	<-chan st.IngestData, // new list of triples also containing links
+func LinkParser(ctx context.Context, in <-chan ds.IngestData) (
+	<-chan ds.IngestData, // new list of triples also containing links
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any errors when creating this component
 
-	cOut := make(chan st.IngestData)
+	cOut := make(chan ds.IngestData)
 	cErr := make(chan error, 1)
 
 	sbf := OpenSBF("./sbf")
@@ -62,7 +62,7 @@ func LinkParser(ctx context.Context, in <-chan st.IngestData) (
 			// did some other object leave a linkTrace that we should
 			// observe because it is valid for our data properties
 			//
-			links := make([]st.Triple, 0)
+			links := make([]ds.Triple, 0)
 			for _, t := range igd.Triples {
 				// see if anyone has registered an interest in this tuple's value
 				if sbf.Test([]byte(t.O)) {

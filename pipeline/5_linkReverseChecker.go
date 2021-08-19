@@ -1,10 +1,10 @@
-package deep6
+package pipeline
 
 import (
 	"context"
 	"fmt"
 
-	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
 	"github.com/dgraph-io/badger/v3"
 	dbset "github.com/digisan/data-block/store/db"
 	"github.com/pkg/errors"
@@ -24,12 +24,12 @@ import (
 // db - badger db used for lookups of objects to link to
 // in - channel providing IngestData objects
 //
-func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
-	<-chan st.IngestData, // pass data on to next stage
+func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
+	<-chan ds.IngestData, // pass data on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) {
 
-	cOut := make(chan st.IngestData)
+	cOut := make(chan ds.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -51,7 +51,7 @@ func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan st.IngestD
 						cErr <- errors.Wrap(err, "LinkReverseChecker() database search error:")
 					}
 					for k := range fdBuf {
-						t := st.ParseTriple(k.(string))
+						t := ds.ParseTriple(k.(string))
 						linksTo[t.S] = struct{}{}
 					}
 				}
@@ -64,7 +64,7 @@ func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan st.IngestD
 				if k == igd.N3id {
 					continue
 				}
-				reverseLinkTriple := st.Triple{
+				reverseLinkTriple := ds.Triple{
 					S: "reverse",
 					P: "link",
 					O: k,

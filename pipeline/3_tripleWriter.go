@@ -1,9 +1,9 @@
-package deep6
+package pipeline
 
 import (
 	"context"
 
-	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/digisan/data-block/store/impl"
 )
@@ -13,16 +13,15 @@ import (
 // lookups by later pipeline stages.
 //
 // ctx - context for pipeline management
-// kv - badger.WriteBatch which manages very fast writing to the
-// datastore
+// kv - badger.WriteBatch which manages very fast writing to the datastore
 // in - channel providing IngestData objects
 //
-func TripleWriter(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
-	<-chan st.IngestData, // pass on to next stage
+func TripleWriter(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
+	<-chan ds.IngestData, // pass on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any error encountered creating this component
 
-	cOut := make(chan st.IngestData)
+	cOut := make(chan ds.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {

@@ -1,10 +1,10 @@
-package deep6
+package pipeline
 
 import (
 	"context"
 	"fmt"
 
-	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
 	jt "github.com/digisan/json-tool"
 )
 
@@ -15,12 +15,12 @@ import (
 // ctx - context used for pipeline management
 // in - channel providing IngestData objects
 //
-func TupleGenerator(ctx context.Context, in <-chan st.IngestData) (
-	<-chan st.IngestData,
+func TupleGenerator(ctx context.Context, in <-chan ds.IngestData) (
+	<-chan ds.IngestData,
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // any error encountered when creating this component
 
-	cOut := make(chan st.IngestData)
+	cOut := make(chan ds.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -40,9 +40,9 @@ func TupleGenerator(ctx context.Context, in <-chan st.IngestData) (
 			igd.RawData["unique"] = igd.Unique
 
 			// create list of subject:predicate:object triples
-			tuples := make([]st.Triple, 0)
+			tuples := make([]ds.Triple, 0)
 			for k, v := range igd.RawData {
-				t := st.Triple{
+				t := ds.Triple{
 					S: igd.N3id,
 					P: k,
 					O: fmt.Sprintf("%v", v),

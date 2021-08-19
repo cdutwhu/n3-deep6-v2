@@ -7,7 +7,6 @@ import (
 
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
-	"github.com/digisan/data-block/store/impl"
 	jt "github.com/digisan/json-tool"
 	"github.com/pkg/errors"
 )
@@ -29,7 +28,7 @@ import (
 //
 func runIngestWithReader(r io.Reader, db *badger.DB, folderPath string) error {
 
-	impl.SetPrint(true)
+	// impl.SetPrint(true)
 
 	// set up a context to manage ingest pipeline
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -78,21 +77,21 @@ func runIngestWithReader(r io.Reader, db *badger.DB, folderPath string) error {
 	}
 	cErrList = append(cErrList, cErr)
 
-	cReverselinkerOut, cErr, err := pl.LinkReverseChecker(ctx, db, cLinkerOut) // ------------------- 5)
-	if err != nil {
-		return errors.Wrap(err, "Error: cannot create reverse-link-checker component: ")
-	}
-	cErrList = append(cErrList, cErr)
+	// cReverselinkerOut, cErr, err := pl.LinkReverseChecker(ctx, db, cLinkerOut) // ------------------- 5)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Error: cannot create reverse-link-checker component: ")
+	// }
+	// cErrList = append(cErrList, cErr)
 
-	cBuilderOut, cErr, err := pl.LinkBuilder(ctx, db, cReverselinkerOut) // --------------------------6)
-	if err != nil {
-		return errors.Wrap(err, "Error: cannot create link-builder component: ")
-	}
-	cErrList = append(cErrList, cErr)
+	// cBuilderOut, cErr, err := pl.LinkBuilder(ctx, db, cReverselinkerOut) // --------------------------6)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Error: cannot create link-builder component: ")
+	// }
+	// cErrList = append(cErrList, cErr)
 
 	go func() {
 		I := 1
-		for c := range cBuilderOut {
+		for c := range cLinkerOut {
 			c.Print(I)
 			I++
 		}

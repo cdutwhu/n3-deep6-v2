@@ -1,4 +1,4 @@
-package deep6
+package pipeline
 
 import (
 	"fmt"

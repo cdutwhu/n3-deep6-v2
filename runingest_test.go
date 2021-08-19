@@ -1,9 +1,11 @@
 package deep6
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	dbset "github.com/digisan/data-block/store/db"
 )
 
@@ -20,6 +22,17 @@ func Test_runIngestWithReader(t *testing.T) {
 	defer db.Close()
 
 	runIngestWithReader(f, db, "./")
+
+	fmt.Println("\n--- object id list: ---")
+	idGrp, err := pl.AllObjIDs(db)
+	if err != nil {
+		panic(err)
+	}
+	for _, id := range idGrp {
+		fmt.Println(id)
+	}
+
+	fmt.Println()
 
 	// for k, v := range *(kv.KVs[store.IdxM].(*impl.M)) {
 	// 	fmt.Println(k, v)

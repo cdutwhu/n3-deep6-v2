@@ -1,12 +1,10 @@
-// linkbuilder.go
-
-package deep6
+package pipeline
 
 import (
 	"context"
 	"fmt"
 
-	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
 	"github.com/dgraph-io/badger/v3"
 	dbset "github.com/digisan/data-block/store/db"
 	"github.com/digisan/data-block/store/impl"
@@ -22,12 +20,12 @@ import (
 // wb - badger.Writebatch for fast writing of new link objects
 // in - channel providing IngestData objects
 //
-func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
-	<-chan st.IngestData, // pass data on to next stage
+func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
+	<-chan ds.IngestData, // pass data on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) {
 
-	cOut := make(chan st.IngestData)
+	cOut := make(chan ds.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -52,7 +50,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
 					cErr <- errors.Wrap(err, "Linkbuilder database search error:")
 				}
 				for k := range fdBuf {
-					t := st.ParseTriple(k.(string))
+					t := ds.ParseTriple(k.(string))
 					linksTo[t.S] = struct{}{}
 				}
 			}
@@ -79,7 +77,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
 						continue
 					}
 					// if needed generate new triple and store in the db
-					propertyLinkTriple := st.Triple{
+					propertyLinkTriple := ds.Triple{
 						S: candidate.O,
 						P: "is-a",
 						O: "Property.Link",
@@ -97,7 +95,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
 			// for the object if its own data has no available discrimination
 			//
 			if len(igd.Unique) > 0 {
-				uniqueLinkTriple := st.Triple{
+				uniqueLinkTriple := ds.Triple{
 					S: igd.Unique,
 					P: "is-a",
 					O: "Unique.Link",
@@ -112,12 +110,12 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan st.IngestData) (
 			m.FlushToBadger(db)
 
 			// convert all known links into link triples
-			linkTriples := make([]st.Triple, 0)
+			linkTriples := make([]ds.Triple, 0)
 			for l := range linksTo {
 				if l == igd.N3id {
 					continue // don't self link
 				}
-				t := st.Triple{
+				t := ds.Triple{
 					S: igd.N3id,
 					P: "references",
 					O: l,

@@ -1,4 +1,4 @@
-package deep6
+package datastruct
 
 import (
 	"fmt"

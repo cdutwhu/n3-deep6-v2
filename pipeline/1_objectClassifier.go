@@ -1,4 +1,4 @@
-package deep6
+package pipeline
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	st "github.com/cdutwhu/n3-deep6-v2/struct"
+	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
 	"github.com/nats-io/nuid"
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
@@ -24,11 +24,11 @@ import (
 // in - channel providing json string
 //
 func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
-	<-chan st.IngestData, // emits IngestData objects with classification elements
+	<-chan ds.IngestData, // emits IngestData objects with classification elements
 	<-chan error, // emits errors encountered to the pipeline manager
 	error) { // any error encountered when creating this component
 
-	cOut := make(chan st.IngestData)
+	cOut := make(chan ds.IngestData)
 	cErr := make(chan error, 1)
 
 	// load the classifier definitions;
@@ -73,7 +73,7 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 			var unique string
 
 			// 12 fields
-			igd := st.IngestData{
+			igd := ds.IngestData{
 				Classified:   false,
 				N3id:         nuid.Next(),
 				DataModel:    "JSON",
