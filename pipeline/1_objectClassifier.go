@@ -1,5 +1,3 @@
-// objectclassifier.go
-
 package deep6
 
 import (

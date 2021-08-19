@@ -28,7 +28,7 @@ func TestParseTriple(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ParseTriple(tt.args.tuple, tt.args.sep); !reflect.DeepEqual(got, tt.want) {
+			if got := ParseTriple(tt.args.tuple); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParseTriple() = %v, want %v", got, tt.want)
 			}
 		})
@@ -72,7 +72,7 @@ func TestTriple_HexaTuple(t *testing.T) {
 				O: tt.fields.O,
 			}
 			fmt.Println(tr)
-			for i, t := range tr.HexaTuple(tt.args.sep) {
+			for i, t := range tr.HexaTuple() {
 				fmt.Println(i, t)
 			}
 		})
@@ -116,7 +116,7 @@ func TestTriple_HexaTupleLink(t *testing.T) {
 				O: tt.fields.O,
 			}
 			fmt.Println(tr)
-			for i, t := range tr.HexaTupleLink(tt.args.sep) {
+			for i, t := range tr.HexaTupleLink() {
 				fmt.Println(i, t)
 			}
 		})

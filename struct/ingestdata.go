@@ -2,7 +2,10 @@
 
 package deep6
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 //
 // structure used by the ingest pipeline to
@@ -98,7 +101,7 @@ type IngestData struct {
 }
 
 func (igd *IngestData) Print(msg interface{}) {
-	fmt.Printf("------------------------------------%v\n", msg)
+	fmt.Printf("\n%[1]v %[2]s %[1]v\n\n", msg, strings.Repeat("-", 120))
 	fmt.Println("Classified:", igd.Classified)
 	fmt.Println("N3id:", igd.N3id)
 	fmt.Println("Type:", igd.Type)

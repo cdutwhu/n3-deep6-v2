@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/BurntSushi/toml v0.4.1
 	github.com/dgraph-io/badger/v3 v3.2103.1
-	github.com/digisan/data-block v0.0.13
+	github.com/digisan/data-block v0.0.15
 	github.com/digisan/gotk v0.0.33
 	github.com/digisan/json-tool v0.0.8
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
@@ -18,6 +18,7 @@ require (
 	github.com/nats-io/nuid v1.0.1
 	github.com/pkg/errors v0.9.1
 	github.com/tidwall/gjson v1.8.1
+	github.com/tylertreat/BoomFilters v0.0.0-20210315201527-1a82519a3e43
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
 	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect

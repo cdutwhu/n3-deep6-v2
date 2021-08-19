@@ -29,6 +29,8 @@ import (
 // pso:is-friend-of:dahernan:agonzalezro
 // pos:is-friend-of:agonzalezro:dahernan
 
+const sep = "|"
+
 type Triple struct {
 	// subject
 	S string
@@ -38,7 +40,7 @@ type Triple struct {
 	O string
 }
 
-func ParseTriple(tuple, sep string) Triple {
+func ParseTriple(tuple string) Triple {
 	// parse this
 	// spo:dahernan:is-friend-of:agonzalezro
 	split := strings.SplitN(tuple, sep, 4)
@@ -61,7 +63,7 @@ func ParseTriple(tuple, sep string) Triple {
 	return Triple{S: split[s], O: split[o], P: split[p]}
 }
 
-func (t Triple) HexaTuple(sep string) []string {
+func (t Triple) HexaTuple() []string {
 	return []string{
 		fmt.Sprintf("spo%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.P, t.O),
 		fmt.Sprintf("sop%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.O, t.P),
@@ -72,7 +74,7 @@ func (t Triple) HexaTuple(sep string) []string {
 	}
 }
 
-func (t Triple) HexaTupleLink(sep string) []string {
+func (t Triple) HexaTupleLink() []string {
 	return []string{
 		fmt.Sprintf("spol%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.P, t.O),
 		fmt.Sprintf("sopl%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.O, t.P),

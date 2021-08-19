@@ -1,13 +1,10 @@
 package deep6
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
-	"github.com/digisan/data-block/store"
-	"github.com/digisan/data-block/store/db"
-	"github.com/digisan/data-block/store/impl"
+	dbset "github.com/digisan/data-block/store/db"
 )
 
 func Test_runIngestWithReader(t *testing.T) {
@@ -16,43 +13,41 @@ func Test_runIngestWithReader(t *testing.T) {
 		panic(err)
 	}
 
-	badgerDB, err := db.NewBadgerDB("./data/badger")
+	db, err := dbset.NewBadgerDB("./data/badger")
 	if err != nil {
 		panic(err)
 	}
-	defer badgerDB.Close()
+	defer db.Close()
 
-	kv := store.NewKV(true, true)
+	runIngestWithReader(f, db, "./")
 
-	runIngestWithReader(f, kv, badgerDB, "./")
 	// for k, v := range *(kv.KVs[store.IdxM].(*impl.M)) {
 	// 	fmt.Println(k, v)
 	// }
 
-	kv.KVs[store.IdxM].(*impl.M).FlushToBadger(badgerDB)
+	// kv.KVs[store.IdxM].(*impl.M).FlushToBadger(db)
 
-	fmt.Println("----------------------------------------")
+	// fmt.Println("----------------------------------------")
 
-	fdBuf := impl.NewM()
+	// fdBuf := impl.NewM()
 
-	db.SyncFromBadgerByPrefix(fdBuf, badgerDB, "spo|82656FA0-17B6-42BF-9915-487360FDF361|", func(v interface{}) bool { return v.(int64) != 0 })
-	for k, v := range *fdBuf {
-		fmt.Println(k, v)
-	}
+	// fdBuf, _ := db.BadgerSearchByPrefix(fdBuf, db, "spo|82656FA0-17B6-42BF-9915-487360FDF361|", func(v interface{}) bool { return v.(int64) != 0 })
+	// for k, v := range fdBuf {
+	// 	fmt.Println(k, v)
+	// }
 
-	// real [remove] should only be allowed by cmd,
-	// here invoke only for test
-	if err := db.RemoveToBadger(fdBuf, badgerDB); err != nil {
-		panic(err)
-	}
+	// // real [remove] should only be allowed by cmd,
+	// // here invoke only for test
+	// if err := db.RemoveToBadger(fdBuf, db); err != nil {
+	// 	panic(err)
+	// }
 
-	fmt.Println("----------------------------------------")
+	// fmt.Println("----------------------------------------")
 
-	db.SyncFromBadgerByPrefix(fdBuf, badgerDB, "spo|82656FA0-17B6-42BF-9915-487360FDF361|", func(v interface{}) bool { return v.(int64) != 0 })
-	for k, v := range *fdBuf {
-		fmt.Println(k, v)
-	}
+	// fdBuf, _ = db.BadgerSearchByPrefix(db, "spo|82656FA0-17B6-42BF-9915-487360FDF361|", func(v interface{}) bool { return v.(int64) != 0 })
+	// for k, v := range fdBuf {
+	// 	fmt.Println(k, v)
+	// }
 
-	fmt.Println("----------------------------------------")
-
+	// fmt.Println("----------------------------------------")
 }
