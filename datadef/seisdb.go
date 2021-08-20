@@ -1,4 +1,4 @@
-package datastruct
+package datadef
 
 // SeisDB is a Hexastore based on this paper
 // http://www.vldb.org/pvldb/1/1453965.pdf
@@ -41,6 +41,23 @@ type Triple struct {
 }
 
 func ParseTriple(tuple string) Triple {
+	return parseTriple(tuple, "")
+}
+
+// remove prefix "lc-" on tuple string
+func ParseTripleLC(tuple string) Triple {
+	return parseTriple(tuple, "lc-")
+}
+
+// remove prefix "l-" on tuple string
+func ParseTripleL(tuple string) Triple {
+	return parseTriple(tuple, "l-")
+}
+
+func parseTriple(tuple, prefix string) Triple {
+
+	tuple = tuple[len(prefix):]
+
 	// parse this
 	// spo:dahernan:is-friend-of:agonzalezro
 	split := strings.SplitN(tuple, sep, 4)
@@ -63,24 +80,25 @@ func ParseTriple(tuple string) Triple {
 	return Triple{S: split[s], O: split[o], P: split[p]}
 }
 
-func (t Triple) HexaTuple() []string {
+func (t Triple) hexaTuple(prefix string) []string {
 	return []string{
-		fmt.Sprintf("spo%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.P, t.O),
-		fmt.Sprintf("sop%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.O, t.P),
-		fmt.Sprintf("ops%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.O, t.P, t.S),
-		fmt.Sprintf("osp%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.O, t.S, t.P),
-		fmt.Sprintf("pso%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.P, t.S, t.O),
-		fmt.Sprintf("pos%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.P, t.O, t.S),
+		fmt.Sprintf("%[1]sspo%[2]s%[3]v%[2]s%[4]v%[2]s%[5]v", prefix, sep, t.S, t.P, t.O),
+		fmt.Sprintf("%[1]ssop%[2]s%[3]v%[2]s%[4]v%[2]s%[5]v", prefix, sep, t.S, t.O, t.P),
+		fmt.Sprintf("%[1]sops%[2]s%[3]v%[2]s%[4]v%[2]s%[5]v", prefix, sep, t.O, t.P, t.S),
+		fmt.Sprintf("%[1]sosp%[2]s%[3]v%[2]s%[4]v%[2]s%[5]v", prefix, sep, t.O, t.S, t.P),
+		fmt.Sprintf("%[1]spso%[2]s%[3]v%[2]s%[4]v%[2]s%[5]v", prefix, sep, t.P, t.S, t.O),
+		fmt.Sprintf("%[1]spos%[2]s%[3]v%[2]s%[4]v%[2]s%[5]v", prefix, sep, t.P, t.O, t.S),
 	}
 }
 
+func (t Triple) HexaTuple() []string {
+	return t.hexaTuple("")
+}
+
+func (t Triple) HexaTupleLinkCandidate() []string {
+	return t.hexaTuple("lc-")
+}
+
 func (t Triple) HexaTupleLink() []string {
-	return []string{
-		fmt.Sprintf("spol%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.P, t.O),
-		fmt.Sprintf("sopl%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.S, t.O, t.P),
-		fmt.Sprintf("opsl%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.O, t.P, t.S),
-		fmt.Sprintf("ospl%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.O, t.S, t.P),
-		fmt.Sprintf("psol%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.P, t.S, t.O),
-		fmt.Sprintf("posl%[1]s%[2]v%[1]s%[3]v%[1]s%[4]v", sep, t.P, t.O, t.S),
-	}
+	return t.hexaTuple("l-")
 }

@@ -3,11 +3,11 @@ package pipeline
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
+	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
+	"github.com/cdutwhu/n3-deep6-v2/workpath"
 	"github.com/nats-io/nuid"
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
@@ -23,12 +23,12 @@ import (
 // ctx - context to manage the pipeline
 // in - channel providing json string
 //
-func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
-	<-chan ds.IngestData, // emits IngestData objects with classification elements
+func ObjectClassifier(ctx context.Context, in <-chan string) (
+	<-chan dd.IngestData, // emits IngestData objects with classification elements
 	<-chan error, // emits errors encountered to the pipeline manager
 	error) { // any error encountered when creating this component
 
-	cOut := make(chan ds.IngestData)
+	cOut := make(chan dd.IngestData)
 	cErr := make(chan error, 1)
 
 	// load the classifier definitions;
@@ -44,8 +44,7 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 			Unique         []string // Unique
 		}
 	}
-	classifierFile := fmt.Sprintf("%s/config/datatypes.toml", filePath)
-	if _, err := toml.DecodeFile(classifierFile, &c); err != nil {
+	if _, err := toml.DecodeFile(workpath.DTP(), &c); err != nil {
 		return nil, nil, err
 	}
 
@@ -53,14 +52,7 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 		defer close(cOut)
 		defer close(cErr)
 
-		// I := 1
-
 		for jsonStr := range in { // read json object (string) from upstream source
-
-			// if I == 5 {
-			// 	fmt.Println(I)
-			// }
-			// I++
 
 			rawJson := []byte(jsonStr)
 
@@ -73,7 +65,7 @@ func ObjectClassifier(ctx context.Context, filePath string, in <-chan string) (
 			var unique string
 
 			// 12 fields
-			igd := ds.IngestData{
+			igd := dd.IngestData{
 				Classified:   false,
 				N3id:         nuid.Next(),
 				DataModel:    "JSON",

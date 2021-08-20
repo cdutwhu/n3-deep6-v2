@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
+	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
+	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
 	dbset "github.com/digisan/data-block/store/db"
 	"github.com/pkg/errors"
@@ -24,12 +25,12 @@ import (
 // db - badger db used for lookups of objects to link to
 // in - channel providing IngestData objects
 //
-func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
-	<-chan ds.IngestData, // pass data on to next stage
+func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
+	<-chan dd.IngestData, // pass data on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) {
 
-	cOut := make(chan ds.IngestData)
+	cOut := make(chan dd.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -46,12 +47,12 @@ func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan ds.IngestD
 			for _, candidate := range igd.LinkCandidates {
 				if len(candidate.O) > 0 { // don't link to empty content
 					prefix := fmt.Sprintf("ops|%s|", candidate.O)
-					fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(v interface{}) bool { return v.(int64) > 0 })
+					fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerValid)
 					if err != nil {
 						cErr <- errors.Wrap(err, "LinkReverseChecker() database search error:")
 					}
 					for k := range fdBuf {
-						t := ds.ParseTriple(k.(string))
+						t := dd.ParseTriple(k.(string))
 						linksTo[t.S] = struct{}{}
 					}
 				}
@@ -64,7 +65,7 @@ func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan ds.IngestD
 				if k == igd.N3id {
 					continue
 				}
-				reverseLinkTriple := ds.Triple{
+				reverseLinkTriple := dd.Triple{
 					S: "reverse",
 					P: "link",
 					O: k,

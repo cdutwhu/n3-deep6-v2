@@ -2,4 +2,4 @@
 
 set -e
 
-rm -rf ./data
+rm -rf ./data ./helper/data

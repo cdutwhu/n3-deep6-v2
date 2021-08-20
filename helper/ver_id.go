@@ -1,4 +1,4 @@
-package pipeline
+package helper
 
 import (
 	"fmt"
@@ -8,8 +8,10 @@ import (
 	"github.com/digisan/data-block/store/impl"
 )
 
-const sep = "|"
+// const sep = "|"
 const idPrefix = "s|"
+
+var FnVerValid = func(v interface{}) bool { return v.(int64) > 0 }
 
 // func idPrefix() string {
 // 	return fmt.Sprintf("s%s", sep)
@@ -19,14 +21,14 @@ func id4v(id string) string {
 	return fmt.Sprintf("%s%s", idPrefix, id)
 }
 
-func setVer(id string, ver int64, m *impl.M) *impl.M {
+func SetVer(id string, ver int64, m *impl.M) *impl.M {
 	m.Set(id4v(id), ver)
 	return m
 }
 
-func currVer(id string, db *badger.DB) (int64, error) {
+func CurrVer(id string, db *badger.DB) (int64, error) {
 	key := id4v(id)
-	verBuf, err := dbset.BadgerSearchByKey(db, key, func(v interface{}) bool { return v.(int64) > 0 })
+	verBuf, err := dbset.BadgerSearchByKey(db, key, FnVerValid)
 	if err != nil {
 		return -1, err
 	}
@@ -36,22 +38,23 @@ func currVer(id string, db *badger.DB) (int64, error) {
 	return 0, nil
 }
 
-func nextVer(id string, db *badger.DB) (int64, error) {
-	cv, err := currVer(id, db)
+func NextVer(id string, db *badger.DB) (int64, error) {
+	cv, err := CurrVer(id, db)
 	if err != nil {
 		return -1, err
 	}
 	return cv + 1, nil
 }
 
-func AllObjIDs(db *badger.DB) (ids []string, err error) {
-	m, err := dbset.BadgerSearchByPrefix(db, idPrefix, func(v interface{}) bool { return v.(int64) > 0 })
+func MapAllID(db *badger.DB) (mIdVer map[string]int64, err error) {
+	m, err := dbset.BadgerSearchByPrefix(db, idPrefix, FnVerValid)
 	if err != nil {
 		return nil, err
 	}
+	mIdVer = make(map[string]int64)
 	i := len(idPrefix)
-	for k := range m {
-		ids = append(ids, k.(string)[i:])
+	for k, v := range m {
+		mIdVer[k.(string)[i:]] = v.(int64)
 	}
 	return
 }

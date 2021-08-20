@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
+	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
+	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
 	dbset "github.com/digisan/data-block/store/db"
 	"github.com/digisan/data-block/store/impl"
@@ -20,12 +21,12 @@ import (
 // wb - badger.Writebatch for fast writing of new link objects
 // in - channel providing IngestData objects
 //
-func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
-	<-chan ds.IngestData, // pass data on to next stage
+func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
+	<-chan dd.IngestData, // pass data on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) {
 
-	cOut := make(chan ds.IngestData)
+	cOut := make(chan dd.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -36,7 +37,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
 			linksTo := make(map[string]interface{})
 
 			// get current igd version, "s|id" for key
-			ver, err := currVer(igd.N3id, db)
+			ver, err := helper.CurrVer(igd.N3id, db)
 			if err != nil {
 				cErr <- err
 			}
@@ -45,12 +46,12 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
 			//
 			for _, candidate := range igd.LinkCandidates {
 				prefix := fmt.Sprintf("spo|%s|is-a|", candidate.O)
-				fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(v interface{}) bool { return v.(int64) > 0 })
+				fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerValid)
 				if err != nil {
 					cErr <- errors.Wrap(err, "Linkbuilder database search error:")
 				}
 				for k := range fdBuf {
-					t := ds.ParseTriple(k.(string))
+					t := dd.ParseTriple(k.(string))
 					linksTo[t.S] = struct{}{}
 				}
 			}
@@ -77,7 +78,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
 						continue
 					}
 					// if needed generate new triple and store in the db
-					propertyLinkTriple := ds.Triple{
+					propertyLinkTriple := dd.Triple{
 						S: candidate.O,
 						P: "is-a",
 						O: "Property.Link",
@@ -95,7 +96,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
 			// for the object if its own data has no available discrimination
 			//
 			if len(igd.Unique) > 0 {
-				uniqueLinkTriple := ds.Triple{
+				uniqueLinkTriple := dd.Triple{
 					S: igd.Unique,
 					P: "is-a",
 					O: "Unique.Link",
@@ -110,12 +111,12 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
 			m.FlushToBadger(db)
 
 			// convert all known links into link triples
-			linkTriples := make([]ds.Triple, 0)
+			linkTriples := make([]dd.Triple, 0)
 			for l := range linksTo {
 				if l == igd.N3id {
 					continue // don't self link
 				}
-				t := ds.Triple{
+				t := dd.Triple{
 					S: igd.N3id,
 					P: "references",
 					O: l,

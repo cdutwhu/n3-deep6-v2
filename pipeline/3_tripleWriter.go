@@ -3,7 +3,8 @@ package pipeline
 import (
 	"context"
 
-	ds "github.com/cdutwhu/n3-deep6-v2/datastruct"
+	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
+	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/digisan/data-block/store/impl"
 )
@@ -16,12 +17,12 @@ import (
 // kv - badger.WriteBatch which manages very fast writing to the datastore
 // in - channel providing IngestData objects
 //
-func TripleWriter(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
-	<-chan ds.IngestData, // pass on to next stage
+func TripleWriter(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
+	<-chan dd.IngestData, // pass on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any error encountered creating this component
 
-	cOut := make(chan ds.IngestData)
+	cOut := make(chan dd.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -32,19 +33,20 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan ds.IngestData) (
 
 			m := impl.NewM()
 
-			ver, err := nextVer(igd.N3id, db)
+			ver, err := helper.NextVer(igd.N3id, db)
 			if err != nil {
 				cErr <- err
 			}
-			setVer(igd.N3id, ver, m)
+			helper.SetVer(igd.N3id, ver, m) // save id & version into database
 
 			// Save triple content
 			for _, t := range igd.Triples {
 				for _, hexa := range t.HexaTuple() { // turn each tuple into hexastore entries
-					m.Set(hexa, ver)
+					m.Set(hexa, ver) // save triples(spo,...) & version into database
 				}
 			}
 
+			// flush to database
 			m.FlushToBadger(db)
 
 			select {
