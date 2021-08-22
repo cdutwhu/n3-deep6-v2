@@ -21,12 +21,12 @@ import (
 // wb - badger.Writebatch for fast writing of new link objects
 // in - channel providing IngestData objects
 //
-func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
-	<-chan dd.IngestData, // pass data on to next stage
+func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
+	<-chan *dd.IngestData, // pass data on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) {
 
-	cOut := make(chan dd.IngestData)
+	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -37,7 +37,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
 			linksTo := make(map[string]interface{})
 
 			// get current igd version, "s|id" for key
-			ver, err := helper.CurrVer(igd.N3id, db)
+			ver, err := helper.CurVer(igd.N3id, db)
 			if err != nil {
 				cErr <- err
 			}
@@ -46,7 +46,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
 			//
 			for _, candidate := range igd.LinkCandidates {
 				prefix := fmt.Sprintf("spo|%s|is-a|", candidate.O)
-				fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerValid)
+				fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerActive)
 				if err != nil {
 					cErr <- errors.Wrap(err, "Linkbuilder database search error:")
 				}

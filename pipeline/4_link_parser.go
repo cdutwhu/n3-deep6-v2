@@ -17,12 +17,12 @@ import (
 // sbf - bloom filter used to capture required link fields between objects
 // in - channel providing IngestData objects
 //
-func LinkParser(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
-	<-chan dd.IngestData, // new list of triples also containing links
+func LinkParser(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
+	<-chan *dd.IngestData, // new list of triples also containing links
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any errors when creating this component
 
-	cOut := make(chan dd.IngestData)
+	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
 
 	sbf := OpenSBF("./sbf")
@@ -33,9 +33,14 @@ func LinkParser(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
 
 		for igd := range in {
 
+			if igd == nil {
+				cOut <- igd
+				continue
+			}
+
 			m := impl.NewM()
 
-			ver, err := helper.CurrVer(igd.N3id, db)
+			ver, err := helper.CurVer(igd.N3id, db)
 			if err != nil {
 				cErr <- err
 			}

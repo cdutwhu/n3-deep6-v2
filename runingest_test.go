@@ -12,41 +12,6 @@ import (
 	dbset "github.com/digisan/data-block/store/db"
 )
 
-// func TestIngestDataFromDB(t *testing.T) {
-
-// 	wp.SetWorkPath("./")
-
-// 	// set up a context to manage ingest pipeline
-// 	ctx, cancelFunc := context.WithCancel(context.Background())
-// 	defer cancelFunc()
-
-// 	// monitor all error channels
-// 	var cErrList []<-chan error
-
-// 	db, err := dbset.NewBadgerDB(wp.DBP())
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer db.Close()
-
-// 	cIGD, cErr, _ := pl.IngestDataFromDB(ctx, db, "4947ED1F-1E94-4850-8B8F-35C653F51E9C")
-// 	cErrList = append(cErrList, cErr)
-
-// 	go func() {
-// 		for igd := range cIGD {
-// 			fmt.Println(jt.Fmt(string(igd.RawBytes), "  "))
-// 			igd.Print("")
-// 		}
-// 	}()
-
-// 	err = pl.WaitForPipeline(cErrList...)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	time.Sleep(10 * time.Millisecond)
-// }
-
 func Test_runIngestWithReader(t *testing.T) {
 
 	wp.SetWorkPath("./")
@@ -69,7 +34,7 @@ func Test_runIngestWithReader(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	fmt.Println("\n--- object id list: ---")
-	mIdVer, err := helper.MapAllID(db)
+	mIdVer, err := helper.MapAllId(db)
 	if err != nil {
 		panic(err)
 	}

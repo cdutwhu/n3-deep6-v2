@@ -24,8 +24,8 @@ github.com/dgraph-io/badger/v3 v3.2103.1/go.mod h1:dULbq6ehJ5K0cGW/1TQ9iSfUk0gbS
 github.com/dgraph-io/ristretto v0.1.0 h1:Jv3CGQHp9OjuMBSne1485aDpUkTKEcUqF+jm/LuerPI=
 github.com/dgraph-io/ristretto v0.1.0/go.mod h1:fux0lOrBhrVCJd3lcTHsIJhq1T2rokOu6v9Vcb3Q9ug=
 github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
-github.com/digisan/data-block v0.0.15 h1:k10h2EVRAPeh88QnPKEltA4owjefP9DWDOxx+q33EnY=
-github.com/digisan/data-block v0.0.15/go.mod h1:jsaz+Ul6LejdAXPiWXsKvDMU2XjiR9LoFxslEr6ZxIY=
+github.com/digisan/data-block v0.0.16 h1:WCSe5xtCBxmLbNZg3L1Mp+4K00FAO29lCp/PRU7j+nI=
+github.com/digisan/data-block v0.0.16/go.mod h1:jsaz+Ul6LejdAXPiWXsKvDMU2XjiR9LoFxslEr6ZxIY=
 github.com/digisan/gotk v0.0.26/go.mod h1:UQ8YCI0uvFowgH6q7cI6FGDy2vMLmCIgLb/E3HqkUU0=
 github.com/digisan/gotk v0.0.33 h1:CmZEXNwqMLWoVlScn6acgZoM/4LrhR5TcKz7MN3ID/s=
 github.com/digisan/gotk v0.0.33/go.mod h1:UQ8YCI0uvFowgH6q7cI6FGDy2vMLmCIgLb/E3HqkUU0=

@@ -9,7 +9,6 @@ import (
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
 	"github.com/cdutwhu/n3-deep6-v2/workpath"
 	"github.com/nats-io/nuid"
-	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 )
 
@@ -24,17 +23,15 @@ import (
 // in - channel providing json string
 //
 func ObjectClassifier(ctx context.Context, in <-chan string) (
-	<-chan dd.IngestData, // emits IngestData objects with classification elements
+	<-chan *dd.IngestData, // emits IngestData objects with classification elements
 	<-chan error, // emits errors encountered to the pipeline manager
 	error) { // any error encountered when creating this component
 
-	cOut := make(chan dd.IngestData)
+	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
 
 	// load the classifier definitions;
-	// each data-model type characterized by properties of the
-	// json data.
-	//
+	// each data-model type characterized by properties of the json data.
 	var c struct {
 		Classifier []struct {
 			Data_model     string   // DataMode / Type?
@@ -58,14 +55,12 @@ func ObjectClassifier(ctx context.Context, in <-chan string) (
 
 			jsonMap := make(map[string]interface{})
 			if err := json.Unmarshal(rawJson, &jsonMap); err != nil {
-				cErr <- errors.Wrap(err, "json Unmarshal error")
-				return
+				cOut <- nil // " cErr <- *** " will cause badger panic!
+				continue
 			}
 
-			var unique string
-
 			// 12 fields
-			igd := dd.IngestData{
+			igd := &dd.IngestData{
 				Classified:   false,
 				N3id:         nuid.Next(),
 				DataModel:    "JSON",
@@ -76,6 +71,8 @@ func ObjectClassifier(ctx context.Context, in <-chan string) (
 				Unique:       "",
 				LinkSpecs:    []string{},
 			}
+
+			var unique string
 
 			//
 			// check the data by comparing with the known

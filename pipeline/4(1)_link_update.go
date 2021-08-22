@@ -10,7 +10,7 @@ import (
 )
 
 func UpdateLinkCandidates(db *badger.DB) {
-	mIdVer, err := helper.MapAllID(db)
+	mIdVer, err := helper.MapAllId(db)
 	if err != nil {
 		panic(err)
 	}
@@ -25,7 +25,7 @@ func UpdateLinkCandidates(db *badger.DB) {
 
 			if len(lkVal) > 0 {
 				prefix := fmt.Sprintf("ops|%s|", lkVal)
-				fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerValid)
+				fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerActive)
 				for k := range fdBuf {
 					t := dd.ParseTriple(k.(string))
 					if t.S != id {

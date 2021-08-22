@@ -18,16 +18,20 @@ import (
 //
 type IngestData struct {
 	//
-	// Classified indicate this ingested data instance
-	// has been classified
-	//
-	Classified bool
-	//
 	// Unique id for the object being processed
 	// will be derived from the inbound json object
 	// or created by the pipeline
 	//
 	N3id string
+	//
+	// Storage version for N3id in database
+	//
+	Version int64
+	//
+	// Classified indicate this ingested data instance
+	// has been classified
+	//
+	Classified bool
 	//
 	// The declared type of the object
 	// such as a SIF StudentPersonal
@@ -102,6 +106,7 @@ func (igd *IngestData) Print(msg interface{}) {
 	fmt.Printf("\n%[1]v %[2]s %[1]v\n\n", msg, strings.Repeat("-", 120))
 	fmt.Println("Classified:", igd.Classified)
 	fmt.Println("N3id:", igd.N3id)
+	fmt.Println("Version:", igd.Version)
 	fmt.Println("Type:", igd.Type)
 	fmt.Println("DataModel:", igd.DataModel)
 	fmt.Println("Bytes length:", len(igd.RawBytes))

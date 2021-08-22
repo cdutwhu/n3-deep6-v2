@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/BurntSushi/toml v0.4.1
 	github.com/dgraph-io/badger/v3 v3.2103.1
-	github.com/digisan/data-block v0.0.15
+	github.com/digisan/data-block v0.0.16
 	github.com/digisan/gotk v0.0.33
 	github.com/digisan/json-tool v0.0.9
 	github.com/golang/glog v1.0.0 // indirect

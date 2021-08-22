@@ -38,14 +38,13 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 	//
 	// build the pipeline by connecting all stages
 	//
-
 	cJsonOut, cErr, err := jt.ScanObjectInArray(ctx, r, true)
 	if err != nil {
 		return errors.Wrap(err, "Error: cannot create json-reader source component: ")
 	}
 	cErrList = append(cErrList, cErr)
 
-	cClassOut, cErr, err := pl.ObjectClassifier(ctx, cJsonOut) // ------------------------1)
+	cOut, cErr, err := pl.ObjectClassifier(ctx, cJsonOut) // ------------------------1)
 	if err != nil {
 		return errors.Wrap(err, "Error: cannot create object-classifier component: ")
 	}
@@ -57,19 +56,19 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 	// }
 	// errcList = append(errcList, errc)
 
-	cTripleOut, cErr, err := pl.TupleGenerator(ctx, cClassOut) // ------------------------------------2)
+	cOut, cErr, err = pl.TupleGenerator(ctx, cOut) // ------------------------------------2)
 	if err != nil {
 		return errors.Wrap(err, "Error: cannot create tuple-generator component: ")
 	}
 	cErrList = append(cErrList, cErr)
 
-	cWriterOut, cErr, err := pl.TripleWriter(ctx, db, cTripleOut) // ---------------------------------3)
+	cOut, cErr, err = pl.TripleWriter(ctx, db, cOut) // ---------------------------------3)
 	if err != nil {
 		return errors.Wrap(err, "Error: cannot create triple-writer component: ")
 	}
 	cErrList = append(cErrList, cErr)
 
-	cLinkerOut, cErr, err := pl.LinkParser(ctx, db, cWriterOut) // ---------------------------------------4)
+	cOut, cErr, err = pl.LinkParser(ctx, db, cOut) // ---------------------------------------4)
 	if err != nil {
 		return errors.Wrap(err, "Error: cannot create link-parser component: ")
 	}
@@ -89,8 +88,8 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 
 	go func() {
 		I := 1
-		for c := range cLinkerOut {
-			c.Print(I)
+		for igd := range cOut {
+			igd.Print(I)
 			I++
 		}
 	}()

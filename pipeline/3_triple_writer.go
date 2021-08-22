@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"log"
 
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
@@ -17,12 +18,12 @@ import (
 // kv - badger.WriteBatch which manages very fast writing to the datastore
 // in - channel providing IngestData objects
 //
-func TripleWriter(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
-	<-chan dd.IngestData, // pass on to next stage
+func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
+	<-chan *dd.IngestData, // pass on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any error encountered creating this component
 
-	cOut := make(chan dd.IngestData)
+	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -33,11 +34,14 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan dd.IngestData) (
 
 			m := impl.NewM()
 
-			ver, err := helper.NextVer(igd.N3id, db)
+			ver, err := helper.NewVer(igd.N3id, db)
 			if err != nil {
-				cErr <- err
+				log.Fatalf("NewVer for %s error\n", igd.N3id)
+				cOut <- nil
+				continue
 			}
 			helper.SetVer(igd.N3id, ver, m) // save id & version into database
+			igd.Version = ver
 
 			// Save triple content
 			for _, t := range igd.Triples {

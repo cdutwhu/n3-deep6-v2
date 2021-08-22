@@ -47,7 +47,7 @@ func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan dd.IngestD
 			for _, candidate := range igd.LinkCandidates {
 				if len(candidate.O) > 0 { // don't link to empty content
 					prefix := fmt.Sprintf("ops|%s|", candidate.O)
-					fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerValid)
+					fdBuf, err := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerActive)
 					if err != nil {
 						cErr <- errors.Wrap(err, "LinkReverseChecker() database search error:")
 					}

@@ -15,12 +15,12 @@ import (
 // ctx - context used for pipeline management
 // in - channel providing IngestData objects
 //
-func TupleGenerator(ctx context.Context, in <-chan dd.IngestData) (
-	<-chan dd.IngestData,
+func TupleGenerator(ctx context.Context, in <-chan *dd.IngestData) (
+	<-chan *dd.IngestData,
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // any error encountered when creating this component
 
-	cOut := make(chan dd.IngestData)
+	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
 
 	go func() {
@@ -28,6 +28,11 @@ func TupleGenerator(ctx context.Context, in <-chan dd.IngestData) (
 		defer close(cErr)
 
 		for igd := range in {
+
+			if igd == nil {
+				cOut <- igd
+				continue
+			}
 
 			var err error
 			igd.RawData, err = jt.Flatten(igd.RawBytes) // turn json m into predicate:object pairs
