@@ -3,6 +3,9 @@ package datadef
 import (
 	"fmt"
 	"strings"
+
+	"github.com/digisan/gotk/slice/ts"
+	jt "github.com/digisan/json-tool"
 )
 
 //
@@ -102,29 +105,44 @@ type IngestData struct {
 	LinkTriples []Triple
 }
 
-func (igd *IngestData) Print(msg interface{}) {
+func (igd *IngestData) Print(msg interface{}, excl ...string) {
+
 	fmt.Printf("\n%[1]v %[2]s %[1]v\n\n", msg, strings.Repeat("-", 120))
 	fmt.Println("Classified:", igd.Classified)
 	fmt.Println("N3id:", igd.N3id)
 	fmt.Println("Version:", igd.Version)
 	fmt.Println("Type:", igd.Type)
 	fmt.Println("DataModel:", igd.DataModel)
-	fmt.Println("Bytes length:", len(igd.RawBytes))
-	fmt.Println("The 1st level map length", len(igd.RawData))
+	fmt.Printf("Bytes length: %d\n", len(igd.RawBytes))
+	if ts.NotIn("RawBytes", excl...) {
+		fmt.Println(string(jt.Fmt(igd.RawBytes, "	")))
+	}
+	fmt.Printf("The flat json map length: %d\n", len(igd.RawData))
+	if ts.NotIn("RawData", excl...) {
+		for k, v := range igd.RawData {
+			fmt.Println("	", k, v)
+		}
+	}
 	fmt.Println("LinkSpecs:", igd.LinkSpecs)
 	fmt.Println("Unique:", igd.Unique)
 	fmt.Println("UniqueValues:", igd.UniqueValues)
 	//
-	fmt.Println("Triples:")
-	for _, t := range igd.Triples {
-		fmt.Println("	", t)
+	fmt.Printf("Triples:%d\n", len(igd.Triples))
+	if ts.NotIn("Triples", excl...) {
+		for _, t := range igd.Triples {
+			fmt.Println("	", t)
+		}
 	}
-	fmt.Println("LinkCandidates:")
-	for _, t := range igd.LinkCandidates {
-		fmt.Println("	", t)
+	fmt.Printf("LinkCandidates:%d\n", len(igd.LinkCandidates))
+	if ts.NotIn("LinkCandidates", excl...) {
+		for _, t := range igd.LinkCandidates {
+			fmt.Println("	", t)
+		}
 	}
-	fmt.Println("LinkTriples:")
-	for _, t := range igd.LinkTriples {
-		fmt.Println("	", t)
+	fmt.Printf("LinkTriples:%d\n", len(igd.LinkTriples))
+	if ts.NotIn("LinkTriples", excl...) {
+		for _, t := range igd.LinkTriples {
+			fmt.Println("	", t)
+		}
 	}
 }

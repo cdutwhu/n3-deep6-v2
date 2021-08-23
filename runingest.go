@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/cdutwhu/n3-deep6-v2/datadef"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
@@ -26,11 +27,9 @@ import (
 // r - the io.Reader (file, http body etc.) to be ingested
 // auditLevel - one of: none, basic, high
 //
-func runIngestWithReader(r io.Reader, db *badger.DB) error {
+func RunIngestWithReader(ctx context.Context, r io.Reader, db *badger.DB) (cOut <-chan *datadef.IngestData, cErr <-chan error) {
 
-	// set up a context to manage ingest pipeline
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	defer cancelFunc()
+	ce := make(chan error)
 
 	// monitor all error channels
 	var cErrList []<-chan error
@@ -40,15 +39,19 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 	//
 	cJsonOut, cErr, err := jt.ScanObjectInArray(ctx, r, true)
 	if err != nil {
-		return errors.Wrap(err, "Error: cannot create json-reader source component: ")
+		ce <- errors.Wrap(err, "Error: cannot create json-reader source component: ")
+		return nil, ce
 	}
 	cErrList = append(cErrList, cErr)
 
-	cOut, cErr, err := pl.ObjectClassifier(ctx, cJsonOut) // ------------------------1)
+	cOut, cErr, err = pl.ObjectClassifier(ctx, cJsonOut) // ------------------------1)
 	if err != nil {
-		return errors.Wrap(err, "Error: cannot create object-classifier component: ")
+		ce <- errors.Wrap(err, "Error: cannot create object-classifier component: ")
+		return nil, ce
 	}
 	cErrList = append(cErrList, cErr)
+
+	/////
 
 	// remObjOut, errc, err := objectRemover(ctx, db, wb, sbf, auditLevel, folderPath, classOut)
 	// if err != nil {
@@ -56,23 +59,30 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 	// }
 	// errcList = append(errcList, errc)
 
+	/////
+
 	cOut, cErr, err = pl.TupleGenerator(ctx, cOut) // ------------------------------------2)
 	if err != nil {
-		return errors.Wrap(err, "Error: cannot create tuple-generator component: ")
+		ce <- errors.Wrap(err, "Error: cannot create tuple-generator component: ")
+		return nil, ce
 	}
 	cErrList = append(cErrList, cErr)
 
 	cOut, cErr, err = pl.TripleWriter(ctx, db, cOut) // ---------------------------------3)
 	if err != nil {
-		return errors.Wrap(err, "Error: cannot create triple-writer component: ")
+		ce <- errors.Wrap(err, "Error: cannot create triple-writer component: ")
+		return nil, ce
 	}
 	cErrList = append(cErrList, cErr)
 
 	cOut, cErr, err = pl.LinkParser(ctx, db, cOut) // ---------------------------------------4)
 	if err != nil {
-		return errors.Wrap(err, "Error: cannot create link-parser component: ")
+		ce <- errors.Wrap(err, "Error: cannot create link-parser component: ")
+		return nil, ce
 	}
 	cErrList = append(cErrList, cErr)
+
+	/////
 
 	// cReverselinkerOut, cErr, err := pl.LinkReverseChecker(ctx, db, cLinkerOut) // ------------------- 5)
 	// if err != nil {
@@ -85,14 +95,6 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 	// 	return errors.Wrap(err, "Error: cannot create link-builder component: ")
 	// }
 	// cErrList = append(cErrList, cErr)
-
-	go func() {
-		I := 1
-		for igd := range cOut {
-			igd.Print(I)
-			I++
-		}
-	}()
 
 	// lwriterOut, errc, err := linkWriter(ctx, wb, builderOut)
 	// if err != nil {
@@ -107,5 +109,5 @@ func runIngestWithReader(r io.Reader, db *badger.DB) error {
 	// errcList = append(errcList, errc)
 
 	// monitor progress
-	return helper.WaitForPipeline(cErrList...)
+	return cOut, helper.MergeErrors(cErrList...) // helper.WaitForPipeline(cErrList...)
 }

@@ -1,10 +1,10 @@
 package deep6
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
@@ -27,11 +27,27 @@ func Test_runIngestWithReader(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer db.Close() // cancel pipeline first, then close database
 
-	runIngestWithReader(f, db)
+	// set up a context to manage ingest pipeline
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // cancel pipeline first, then close database
 
-	time.Sleep(10 * time.Millisecond)
+	RunIngestWithReader(ctx, f, db)
+
+	cOut, cErr := RunIngestWithReader(ctx, f, db)
+	go func() {
+		I := 1
+		for igd := range cOut {
+			if igd != nil {
+				igd.Print(I, "Triples", "RawData", "LinkCandidates", "RawBytes")
+				I++
+			}
+		}
+	}()
+	if err := <-cErr; err != nil {
+		panic(err)
+	}
 
 	fmt.Println("\n--- object id list: ---")
 	mIdVer, err := helper.MapAllId(db)
