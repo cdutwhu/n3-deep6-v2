@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
@@ -12,44 +13,49 @@ import (
 	dbset "github.com/digisan/data-block/store/db"
 )
 
-func Test_runIngestWithReader(t *testing.T) {
+func Test_RunIngestWithReader(t *testing.T) {
 
+	AuditStep = 2
 	wp.SetWorkPath("./")
-
 	// impl.SetPrint(true)
 
-	f, err := os.Open("./mixed.json")
-	if err != nil {
-		panic(err)
+	for i := 0; i < 100; i++ {
+		func() {
+			f, err := os.Open("./mixed.json")
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			db, err := dbset.NewBadgerDB(wp.DBP())
+			if err != nil {
+				panic(err)
+			}
+			defer func() { time.Sleep(10 * time.Millisecond); db.Close() }() // cancel pipeline first, then close database
+
+			// set up a context to manage ingest pipeline
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel() // cancel pipeline first, then close database
+
+			if err := RunIngest(ctx, f, db); err != nil {
+				fmt.Println(err)
+			}
+		}()
 	}
+}
+
+func TestMapAllId(t *testing.T) {
+
+	wp.SetWorkPath("./")
 
 	db, err := dbset.NewBadgerDB(wp.DBP())
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close() // cancel pipeline first, then close database
+	defer db.Close()
 
-	// set up a context to manage ingest pipeline
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() // cancel pipeline first, then close database
+	fmt.Println("\n------------------------ object id list:         ------------------------")
 
-	RunIngestWithReader(ctx, f, db)
-
-	cOut, cErr := RunIngestWithReader(ctx, f, db)
-	go func() {
-		I := 1
-		for igd := range cOut {
-			if igd != nil {
-				igd.Print(I, "Triples", "RawData", "LinkCandidates", "RawBytes")
-				I++
-			}
-		}
-	}()
-	if err := <-cErr; err != nil {
-		panic(err)
-	}
-
-	fmt.Println("\n--- object id list: ---")
 	mIdVer, err := helper.MapAllId(db)
 	if err != nil {
 		panic(err)
@@ -58,38 +64,23 @@ func Test_runIngestWithReader(t *testing.T) {
 		fmt.Println(id, "@", ver)
 	}
 
-	fmt.Println("\n--- Update Link Candidates: ---")
-	pl.UpdateLinkCandidates(db)
+	fmt.Println("\n------------------------ Update Link Candidates: ------------------------")
+	pl.LinkBuilder(db)
+}
 
-	fmt.Println()
+func TestLinkScan(t *testing.T) {
 
-	// for k, v := range *(kv.KVs[store.IdxM].(*impl.M)) {
-	// 	fmt.Println(k, v)
-	// }
+	wp.SetWorkPath("./")
 
-	// kv.KVs[store.IdxM].(*impl.M).FlushToBadger(db)
+	db, err := dbset.NewBadgerDB(wp.DBP())
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
-	// fmt.Println("----------------------------------------")
-
-	// fdBuf := impl.NewM()
-
-	// fdBuf, _ := db.BadgerSearchByPrefix(fdBuf, db, "spo|82656FA0-17B6-42BF-9915-487360FDF361|", fVerValid)
-	// for k, v := range fdBuf {
-	// 	fmt.Println(k, v)
-	// }
-
-	// // real [remove] should only be allowed by cmd,
-	// // here invoke only for test
-	// if err := db.RemoveToBadger(fdBuf, db); err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println("----------------------------------------")
-
-	// fdBuf, _ = db.BadgerSearchByPrefix(db, "spo|82656FA0-17B6-42BF-9915-487360FDF361|", fVerValid)
-	// for k, v := range fdBuf {
-	// 	fmt.Println(k, v)
-	// }
-
-	// fmt.Println("----------------------------------------")
+	prefix := fmt.Sprintf("l-spo|")
+	fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerActive)
+	for k, v := range fdBuf {
+		fmt.Println(k, v)
+	}
 }

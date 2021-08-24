@@ -21,7 +21,7 @@ import (
 // wb - badger.Writebatch for fast writing of new link objects
 // in - channel providing IngestData objects
 //
-func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
+func LinkBuilderOld(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
 	<-chan *dd.IngestData, // pass data on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) {
@@ -83,7 +83,7 @@ func LinkBuilder(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
 						P: "is-a",
 						O: "Property.Link",
 					}
-					for _, t := range propertyLinkTriple.HexaTuple() {
+					for _, t := range propertyLinkTriple.hexaTupleData() {
 						m.Set(t, ver)
 						linksTo[propertyLinkTriple.S] = struct{}{} // add new link
 					}

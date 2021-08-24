@@ -107,42 +107,81 @@ type IngestData struct {
 
 func (igd *IngestData) Print(msg interface{}, excl ...string) {
 
-	fmt.Printf("\n%[1]v %[2]s %[1]v\n\n", msg, strings.Repeat("-", 120))
-	fmt.Println("Classified:", igd.Classified)
-	fmt.Println("N3id:", igd.N3id)
-	fmt.Println("Version:", igd.Version)
-	fmt.Println("Type:", igd.Type)
-	fmt.Println("DataModel:", igd.DataModel)
-	fmt.Printf("Bytes length: %d\n", len(igd.RawBytes))
+	const (
+		format      = "\n%-30s%v"
+		formatFirst = "%-30s%v"
+		formatLast  = "%-30s%v"
+	)
+
+	fmt.Printf("\n\n%[1]v %[2]s %[1]v", msg, strings.Repeat("-", 120))
+
+	fmt.Printf(format, "Classified:", igd.Classified)
+
+	fmt.Printf(format, "N3id:", igd.N3id)
+
+	fmt.Printf(format, "Version:", igd.Version)
+
+	fmt.Printf(format, "Type:", igd.Type)
+
+	fmt.Printf(format, "DataModel:", igd.DataModel)
+
+	fmt.Printf(format, "Bytes length:", len(igd.RawBytes))
+	if ts.In("RawBytes", excl...) {
+		fmt.Print("	......")
+	}
 	if ts.NotIn("RawBytes", excl...) {
 		fmt.Println(string(jt.Fmt(igd.RawBytes, "	")))
 	}
-	fmt.Printf("The flat json map length: %d\n", len(igd.RawData))
+
+	fmt.Printf(format, "The flat json map length:", len(igd.RawData))
+	if ts.In("RawData", excl...) {
+		fmt.Print("	......")
+	}
 	if ts.NotIn("RawData", excl...) {
+		fmt.Println()
 		for k, v := range igd.RawData {
 			fmt.Println("	", k, v)
 		}
 	}
-	fmt.Println("LinkSpecs:", igd.LinkSpecs)
-	fmt.Println("Unique:", igd.Unique)
-	fmt.Println("UniqueValues:", igd.UniqueValues)
-	//
-	fmt.Printf("Triples:%d\n", len(igd.Triples))
+
+	fmt.Printf(format, "LinkSpecs:", igd.LinkSpecs)
+
+	fmt.Printf(format, "Unique:", igd.Unique)
+
+	fmt.Printf(format, "UniqueValues:", igd.UniqueValues)
+
+	fmt.Printf(format, "Triples:", len(igd.Triples))
+	if ts.In("Triples", excl...) {
+		fmt.Print("	......")
+	}
 	if ts.NotIn("Triples", excl...) {
+		fmt.Println()
 		for _, t := range igd.Triples {
 			fmt.Println("	", t)
 		}
 	}
-	fmt.Printf("LinkCandidates:%d\n", len(igd.LinkCandidates))
+
+	fmt.Printf(format, "LinkCandidates:", len(igd.LinkCandidates))
+	if ts.In("LinkCandidates", excl...) {
+		fmt.Print("	......")
+	}
 	if ts.NotIn("LinkCandidates", excl...) {
+		fmt.Println()
 		for _, t := range igd.LinkCandidates {
 			fmt.Println("	", t)
 		}
 	}
-	fmt.Printf("LinkTriples:%d\n", len(igd.LinkTriples))
+
+	fmt.Printf(formatLast, "LinkTriples:", len(igd.LinkTriples))
+	if ts.In("LinkTriples", excl...) {
+		fmt.Print("	......")
+	}
 	if ts.NotIn("LinkTriples", excl...) {
+		fmt.Println()
 		for _, t := range igd.LinkTriples {
 			fmt.Println("	", t)
 		}
 	}
+
+	fmt.Println()
 }

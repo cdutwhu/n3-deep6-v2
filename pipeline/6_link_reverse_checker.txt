@@ -52,7 +52,7 @@ func LinkReverseChecker(ctx context.Context, db *badger.DB, in <-chan dd.IngestD
 						cErr <- errors.Wrap(err, "LinkReverseChecker() database search error:")
 					}
 					for k := range fdBuf {
-						t := dd.ParseTriple(k.(string))
+						t := dd.ParseTripleData(k.(string))
 						linksTo[t.S] = struct{}{}
 					}
 				}

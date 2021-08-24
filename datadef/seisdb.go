@@ -19,6 +19,8 @@ package datadef
 import (
 	"fmt"
 	"strings"
+
+	"github.com/digisan/data-block/store/impl"
 )
 
 // hexa-tuples
@@ -40,17 +42,17 @@ type Triple struct {
 	O string
 }
 
-func ParseTriple(tuple string) Triple {
+func ParseTripleData(tuple string) Triple {
 	return parseTriple(tuple, "")
 }
 
 // remove prefix "lc-" on tuple string
-func ParseTripleLC(tuple string) Triple {
+func ParseTripleLinkCandidate(tuple string) Triple {
 	return parseTriple(tuple, "lc-")
 }
 
 // remove prefix "l-" on tuple string
-func ParseTripleL(tuple string) Triple {
+func ParseTripleLink(tuple string) Triple {
 	return parseTriple(tuple, "l-")
 }
 
@@ -91,14 +93,35 @@ func (t Triple) hexaTuple(prefix string) []string {
 	}
 }
 
-func (t Triple) HexaTuple() []string {
+func (t Triple) hexaTupleData() []string {
 	return t.hexaTuple("")
 }
 
-func (t Triple) HexaTupleLinkCandidate() []string {
+func (t Triple) hexaTupleLinkCandidate() []string {
 	return t.hexaTuple("lc-")
 }
 
-func (t Triple) HexaTupleLink() []string {
+func (t Triple) hexaTupleLink() []string {
 	return t.hexaTuple("l-")
+}
+
+// turn tuple into hexastore entries
+// save triples(spo,etc.) & version into database
+
+func (t Triple) Cache2Data(m impl.Ikv, ver int64) {
+	for _, hexa := range t.hexaTupleData() {
+		m.Set(hexa, ver)
+	}
+}
+
+func (t Triple) Cache2LinkCandidate(m impl.Ikv, ver int64) {
+	for _, hexa := range t.hexaTupleLinkCandidate() {
+		m.Set(hexa, ver)
+	}
+}
+
+func (t Triple) Cache2Link(m impl.Ikv, ver int64) {
+	for _, hexa := range t.hexaTupleLink() {
+		m.Set(hexa, ver)
+	}
 }

@@ -44,7 +44,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 			m4com := make(map[string]interface{})
 			for k := range m {
-				t := dd.ParseTriple(k.(string))
+				t := dd.ParseTripleData(k.(string))
 				m4com[t.P] = t.O
 			}
 
@@ -85,7 +85,7 @@ func IngestDataFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 	}
 	cErrList = append(cErrList, cErr)
 
-	cOut, cErr, err = LinkParser(ctx, nil, cOut)
+	cOut, cErr, err = LinkCandidateWriter(ctx, nil, cOut)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Error: cannot create link-parser component: ")
 	}

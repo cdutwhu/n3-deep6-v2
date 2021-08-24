@@ -32,26 +32,24 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) 
 
 		for igd := range in {
 
-			m := impl.NewM()
-
 			ver, err := helper.NewVer(igd.N3id, db)
 			if err != nil {
 				log.Fatalf("NewVer for %s error\n", igd.N3id)
 				cOut <- nil
 				continue
 			}
-			helper.SetVer(igd.N3id, ver, m) // save id & version into database
-			igd.Version = ver
 
-			// Save triple content
-			for _, t := range igd.Triples {
-				for _, hexa := range t.HexaTuple() { // turn each tuple into hexastore entries
-					m.Set(hexa, ver) // save triples(spo,...) & version into database
+			func() {
+				m := impl.NewM()
+				defer m.FlushToBadger(db) // flush to database
+
+				helper.SetVer(igd.N3id, ver, m) // save id & version into database
+				igd.Version = ver
+
+				for _, t := range igd.Triples {
+					t.Cache2Data(m, ver)
 				}
-			}
-
-			// flush to database
-			m.FlushToBadger(db)
+			}()
 
 			select {
 			case cOut <- igd: // pass the data on to the next stage
