@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
+	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
-	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/digisan/data-block/store/impl"
 )
@@ -32,7 +32,7 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) 
 
 		for igd := range in {
 
-			ver, err := helper.NewVer(igd.N3id, db)
+			ver, err := NewVer(igd.N3id, db)
 			if err != nil {
 				log.Fatalf("NewVer for %s error\n", igd.N3id)
 				cOut <- nil
@@ -43,7 +43,7 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) 
 				m := impl.NewM()
 				defer m.FlushToBadger(db) // flush to database
 
-				helper.SetVer(igd.N3id, ver, m) // save id & version into database
+				SetVer(igd.N3id, ver, m) // save id & version into database
 				igd.Version = ver
 
 				for _, t := range igd.Triples {

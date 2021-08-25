@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/BurntSushi/toml v0.4.1
 	github.com/dgraph-io/badger/v3 v3.2103.1
-	github.com/digisan/data-block v0.0.16
+	github.com/digisan/data-block v0.0.17
 	github.com/digisan/gotk v0.0.33
 	github.com/digisan/json-tool v0.0.9
 	github.com/golang/glog v1.0.0 // indirect
@@ -27,7 +27,7 @@ require (
 
 require (
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/digisan/logkit v0.0.2 // indirect

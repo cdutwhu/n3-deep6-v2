@@ -3,8 +3,8 @@ package pipeline
 import (
 	"fmt"
 
+	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
-	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
 	dbset "github.com/digisan/data-block/store/db"
 	"github.com/digisan/data-block/store/impl"
@@ -12,7 +12,7 @@ import (
 
 func LinkBuilder(db *badger.DB) {
 
-	mIdVer, err := helper.MapAllId(db)
+	mIdVer, err := MapAllId(db, false)
 	if err != nil {
 		panic(err)
 	}
@@ -24,7 +24,7 @@ func LinkBuilder(db *badger.DB) {
 		fmt.Println("\nID:", id)
 
 		prefix := fmt.Sprintf("lc-spo|%s|", id)
-		fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, func(v interface{}) bool { return v.(int64) == ver })
+		fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool { return v.(int64) == ver })
 
 		for k := range fdBuf {
 			t := dd.ParseTripleLinkCandidate(k.(string))
@@ -32,7 +32,7 @@ func LinkBuilder(db *badger.DB) {
 
 			if foreignKeyVal := t.O; len(foreignKeyVal) > 0 {
 				prefix := fmt.Sprintf("ops|%s|", foreignKeyVal)
-				fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, helper.FnVerActive)
+				fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, FnVerActive)
 
 				for k := range fdBuf {
 					t := dd.ParseTripleData(k.(string))

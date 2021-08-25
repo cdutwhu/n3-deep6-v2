@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
@@ -24,7 +25,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 		defer close(cOut)
 		defer close(cErr)
 
-		mIdVer, err := helper.MapAllId(db)
+		mIdVer, err := MapAllId(db, false)
 		if err != nil {
 			cErr <- err
 			return
@@ -32,7 +33,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 		for _, id := range ids {
 			prefix := fmt.Sprintf("spo|%s|", id)
-			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(v interface{}) bool { return v.(int64) == mIdVer[id] })
+			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool { return v.(int64) == mIdVer[id] })
 			if err != nil {
 				cErr <- err
 				continue

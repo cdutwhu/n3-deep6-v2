@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
-	"github.com/cdutwhu/n3-deep6-v2/helper"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/digisan/data-block/store/impl"
 )
@@ -35,7 +35,7 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, in <-chan *dd.Inges
 				continue
 			}
 
-			ver, err := helper.CurVer(igd.N3id, db)
+			ver, err := CurVer(igd.N3id, db)
 			if err != nil {
 				cErr <- err
 				continue

@@ -83,8 +83,8 @@ func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 
 	go func() {
 		for range cOut {
-			// fmt.Println(out)
 		}
+		pl.LinkBuilder(db) // update database for creating linkage
 	}()
 
 	// monitor progress
