@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/cdutwhu/n3-deep6-v2/basic"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
@@ -32,6 +33,14 @@ var (
 //
 func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 
+	// speed up version-functions
+	mIdVer, err := basic.MapAllId(db, true)
+	if err != nil {
+		return err
+	}
+
+	wb := db.NewWriteBatch() // Flush action at bottom
+
 	// monitor all error channels
 	var cErrList []<-chan error
 
@@ -59,7 +68,7 @@ func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 
 	// --------------------------------------------------------------------------------- 3)
 
-	cOut, cErr, err = pl.TripleWriter(ctx, db, cOut)
+	cOut, cErr, err = pl.TripleWriter(ctx, db, mIdVer, wb, cOut)
 	if err != nil {
 		return errors.Wrap(err, "Error: TripleWriter ")
 	}
@@ -67,7 +76,7 @@ func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 
 	// --------------------------------------------------------------------------------- 4)
 
-	cOut, cErr, err = pl.LinkCandidateWriter(ctx, db, cOut)
+	cOut, cErr, err = pl.LinkCandidateWriter(ctx, db, mIdVer, wb, cOut)
 	if err != nil {
 		return errors.Wrap(err, "Error: LinkCandidateWriter ")
 	}
@@ -84,7 +93,12 @@ func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 	go func() {
 		for range cOut {
 		}
-		pl.LinkBuilder(db) // update database for creating linkage
+		if err := wb.Flush(); err != nil { // save 'triples' & 'link-candidates' into badger
+			panic("*** write batch flush panic ***")
+		}
+		// wb = db.NewWriteBatch() // reset write batch
+		// pl.LinkBuilder(db, wb)  // update database for creating linkage
+		// wb.Flush()              // save 'links' into badger
 	}()
 
 	// monitor progress

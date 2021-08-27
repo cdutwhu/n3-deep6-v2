@@ -16,7 +16,7 @@ import (
 // ctx - pipeline management context
 // in - channel providing IngestData objects
 //
-func LinkCandidateWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
+func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer map[string]int64, wb *badger.WriteBatch, in <-chan *dd.IngestData) (
 	<-chan *dd.IngestData, // new list of triples also containing links
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any errors when creating this component
@@ -35,7 +35,7 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, in <-chan *dd.Inges
 				continue
 			}
 
-			ver, err := CurVer(igd.N3id, db)
+			ver, err := CurVer(igd.N3id, mIdVer, db)
 			if err != nil {
 				cErr <- err
 				continue
@@ -43,7 +43,11 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, in <-chan *dd.Inges
 
 			func() {
 				m := impl.NewM()
-				defer m.FlushToBadger(db)
+				if wb != nil {
+					defer m.SyncToBadgerWriteBatch(wb)
+				} else {
+					defer m.FlushToBadger(db)
+				}
 
 				for _, t := range igd.Triples {
 					for _, s := range igd.LinkSpecs {

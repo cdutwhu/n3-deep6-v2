@@ -58,7 +58,7 @@ func TestIdStatus(t *testing.T) {
 				id: "0054EB5F-07E6-4A26-84FA-2ADDBF5D84E9",
 				db: db,
 			},
-			want: Inactive,
+			want: None,
 		},
 		{
 			name: "IdStatus",
@@ -71,7 +71,7 @@ func TestIdStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IdStatus(tt.args.id, tt.args.db); got != tt.want {
+			if got := IdStatus(tt.args.id, nil, tt.args.db); got != tt.want {
 				t.Errorf("IdStatus() = %v, want %v", got, tt.want)
 			}
 		})
@@ -108,7 +108,7 @@ func TestDelObj(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := DeleteObj(tt.args.db, tt.args.ids...); (err != nil) != tt.wantErr {
+			if err := DeleteObj(nil, tt.args.db, tt.args.ids...); (err != nil) != tt.wantErr {
 				t.Errorf("DelObj() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -145,7 +145,7 @@ func TestEraseObj(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := EraseObj(tt.args.db, tt.args.ids...); (err != nil) != tt.wantErr {
+			if err := EraseObj(nil, tt.args.db, tt.args.ids...); (err != nil) != tt.wantErr {
 				t.Errorf("EraseObj() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -188,7 +188,6 @@ func TestCleanupErased(t *testing.T) {
 }
 
 func TestBadgerDump(t *testing.T) {
-
 	wp.SetWorkPath("../")
 
 	db, err := dbset.NewBadgerDB(wp.DBP())

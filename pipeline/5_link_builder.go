@@ -10,7 +10,7 @@ import (
 	"github.com/digisan/data-block/store/impl"
 )
 
-func LinkBuilder(db *badger.DB) {
+func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 
 	mIdVer, err := MapAllId(db, false)
 	if err != nil {
@@ -18,7 +18,11 @@ func LinkBuilder(db *badger.DB) {
 	}
 
 	m := impl.NewM()
-	defer m.FlushToBadger(db)
+	if wb != nil {
+		defer m.SyncToBadgerWriteBatch(wb)
+	} else {
+		defer m.FlushToBadger(db)
+	}
 
 	for id, ver := range mIdVer {
 		fmt.Println("\nID:", id)
@@ -28,7 +32,7 @@ func LinkBuilder(db *badger.DB) {
 
 		for k := range fdBuf {
 			t := dd.ParseTripleLinkCandidate(k.(string))
-			// fmt.Printf("Link Value: %s\n", t.O)
+			fmt.Printf("Link Value: %s\n", t.O)
 
 			if foreignKeyVal := t.O; len(foreignKeyVal) > 0 {
 				prefix := fmt.Sprintf("ops|%s|", foreignKeyVal)

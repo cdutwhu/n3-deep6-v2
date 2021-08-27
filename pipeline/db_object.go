@@ -86,7 +86,7 @@ func IngestDataFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 	}
 	cErrList = append(cErrList, cErr)
 
-	cOut, cErr, err = LinkCandidateWriter(ctx, nil, cOut)
+	cOut, cErr, err = LinkCandidateWriter(ctx, nil, nil, nil, cOut)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Error: cannot create link-parser component: ")
 	}

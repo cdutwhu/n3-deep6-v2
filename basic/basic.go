@@ -83,37 +83,53 @@ func MarkErase(id string, m *impl.M) *impl.M {
 	return SetVer(id, verErased, m)
 }
 
-func CurVer(id string, db *badger.DB) (int64, error) {
+func CurVer(id string, mIdVer map[string]int64, db *badger.DB) (int64, error) {
 	key := id4v(id)
-	verBuf, err := dbset.BadgerSearchByKey(db, key, FnVerActive) // active version
+
+	if mIdVer != nil {
+		if ver, ok := mIdVer[key]; ok && ver > 0 { // active version
+			return ver, nil
+		}
+		return 0, nil
+	}
+
+	mIdVerBuf, err := dbset.BadgerSearchByKey(db, key, FnVerActive) // active version
 	if err != nil {
 		return -1, err
 	}
-	if ver, ok := verBuf[key]; ok {
+	if ver, ok := mIdVerBuf[key]; ok {
 		return ver.(int64), nil
 	}
 	return 0, nil
 }
 
-func InactiveCheck(id string, db *badger.DB) bool {
+func InactiveCheck(id string, mIdVer map[string]int64, db *badger.DB) bool {
 	key := id4v(id)
-	verBuf, err := dbset.BadgerSearchByKey(db, key, FnVerInactive) // inactive version
+
+	if mIdVer != nil {
+		if ver, ok := mIdVer[key]; ok && ver == int64(0) { // inactive version
+			return true
+		}
+		return false
+	}
+
+	mIdVerBuf, err := dbset.BadgerSearchByKey(db, key, FnVerInactive) // inactive version
 	if err == nil {
-		if _, ok := verBuf[key]; ok {
+		if _, ok := mIdVerBuf[key]; ok {
 			return true
 		}
 	}
 	return false
 }
 
-func IdStatus(id string, db *badger.DB) status {
-	ver, err := CurVer(id, db)
+func IdStatus(id string, mIdVer map[string]int64, db *badger.DB) status {
+	ver, err := CurVer(id, mIdVer, db)
 	switch {
 	case err != nil:
 		return Unknown
 	case ver > 0:
 		return Active
-	case InactiveCheck(id, db):
+	case InactiveCheck(id, mIdVer, db):
 		return Inactive
 	case ver == int64(0):
 		return None
@@ -122,10 +138,10 @@ func IdStatus(id string, db *badger.DB) status {
 	}
 }
 
-func NewVer(id string, db *badger.DB) (int64, error) {
-	sta := IdStatus(id, db)
+func NewVer(id string, mIdVer map[string]int64, db *badger.DB) (int64, error) {
+	sta := IdStatus(id, mIdVer, db)
 	if sta == None || sta == Active {
-		cv, err := CurVer(id, db)
+		cv, err := CurVer(id, mIdVer, db)
 		if err != nil {
 			return -1, err
 		}
@@ -154,24 +170,24 @@ func MapAllId(db *badger.DB, inclInactive bool) (mIdVer map[string]int64, err er
 	return
 }
 
-func DeleteObj(db *badger.DB, ids ...string) error {
+func DeleteObj(mIdVer map[string]int64, db *badger.DB, ids ...string) error {
 	m := impl.NewM()
 	for _, id := range ids {
-		if IdStatus(id, db) == Active {
+		if IdStatus(id, mIdVer, db) == Active {
 			MarkDelete(id, m)
 		}
 	}
 	return m.FlushToBadger(db)
 }
 
-func EraseObj(db *badger.DB, ids ...string) error {
+func EraseObj(mIdVer map[string]int64, db *badger.DB, ids ...string) error {
 	m := impl.NewM()
 	for _, id := range ids {
-		if IdStatus(id, db) == Inactive {
+		if IdStatus(id, mIdVer, db) == Inactive {
 			MarkErase(id, m)
 		}
 	}
-	return m.FlushToBadger(db) //
+	return m.FlushToBadger(db)
 }
 
 func CleanupErased(db *badger.DB) error {
@@ -196,13 +212,13 @@ func CleanupErased(db *badger.DB) error {
 		fmt.Println("\nCould be real erased in database:", id)
 
 		for _, prefix := range prefixAll {
-			verBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool {
+			mIdVerBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool {
 				return strings.Contains(k.(string), "|"+id)
 			})
 			if err != nil {
 				fmt.Println(err)
 			}
-			for k := range verBuf {
+			for k := range mIdVerBuf {
 				mErasedDB.Set(k, struct{}{})
 				// fmt.Println("deleted:", k)
 			}

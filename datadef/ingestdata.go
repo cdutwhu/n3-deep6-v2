@@ -110,7 +110,7 @@ func (igd *IngestData) Print(msg interface{}, excl ...string) {
 	const (
 		format      = "\n%-30s%v"
 		formatFirst = "%-30s%v"
-		formatLast  = "%-30s%v"
+		formatLast  = "\n%-30s%v"
 	)
 
 	fmt.Printf("\n\n%[1]v %[2]s %[1]v", msg, strings.Repeat("-", 120))

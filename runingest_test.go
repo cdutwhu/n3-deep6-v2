@@ -7,29 +7,43 @@ import (
 	"testing"
 	"time"
 
+	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
 	dbset "github.com/digisan/data-block/store/db"
 )
 
-func Test_RunIngestWithReader(t *testing.T) {
+func TestRunIngestWithReader(t *testing.T) {
 
 	AuditStep = 2
 	wp.SetWorkPath("./")
 	// impl.SetPrint(true)
 
-	for i := 0; i < 5; i++ {
+	sampleDataPaths := []string{
+		// "./test_data/naplan/sif.json",
+		// "./test_data/sif/sif.json",
+		// "./test_data/xapi/xapi.json",
+		// "./test_data/subjects/subjects.json",
+		// "./test_data/lessons/lessons.json",
+		// "./test_data/curriculum/overview.json",
+		// "./test_data/curriculum/content.json",
+		// "./test_data/otf/mapping1.json",
+		// "./test_data/otf/mapping2.json",
+		"./test_data/mixed.json",
+	}
+
+	db, err := dbset.NewBadgerDB(wp.DBP())
+	if err != nil {
+		panic(err)
+	}
+	defer func() { time.Sleep(10 * time.Millisecond); db.Close() }() // cancel pipeline first, then close database
+
+	for _, datafile := range sampleDataPaths {
 		func() {
-			f, err := os.Open("./mixed.json")
+			f, err := os.Open(datafile)
 			if err != nil {
 				panic(err)
 			}
 			defer f.Close()
-
-			db, err := dbset.NewBadgerDB(wp.DBP())
-			if err != nil {
-				panic(err)
-			}
-			defer func() { time.Sleep(10 * time.Millisecond); db.Close() }() // cancel pipeline first, then close database
 
 			// set up a context to manage ingest pipeline
 			ctx, cancel := context.WithCancel(context.Background())
@@ -40,4 +54,18 @@ func Test_RunIngestWithReader(t *testing.T) {
 			}
 		}()
 	}
+}
+
+func TestLinkBuilder(t *testing.T) {
+	wp.SetWorkPath("./")
+
+	db, err := dbset.NewBadgerDB(wp.DBP())
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	wb := db.NewWriteBatch() // reset write batch
+	pl.LinkBuilder(db, wb)   // update database for creating linkage
+	wb.Flush()               // save 'links' into badger
 }

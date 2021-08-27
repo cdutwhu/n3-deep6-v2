@@ -18,7 +18,7 @@ import (
 // kv - badger.WriteBatch which manages very fast writing to the datastore
 // in - channel providing IngestData objects
 //
-func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) (
+func TripleWriter(ctx context.Context, db *badger.DB, mIdVer map[string]int64, wb *badger.WriteBatch, in <-chan *dd.IngestData) (
 	<-chan *dd.IngestData, // pass on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any error encountered creating this component
@@ -32,7 +32,7 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) 
 
 		for igd := range in {
 
-			ver, err := NewVer(igd.N3id, db)
+			ver, err := NewVer(igd.N3id, mIdVer, db)
 			if err != nil {
 				log.Fatalf("NewVer for %s error\n", igd.N3id)
 				cOut <- nil
@@ -41,7 +41,11 @@ func TripleWriter(ctx context.Context, db *badger.DB, in <-chan *dd.IngestData) 
 
 			func() {
 				m := impl.NewM()
-				defer m.FlushToBadger(db) // flush to database
+				if wb != nil {
+					defer m.SyncToBadgerWriteBatch(wb)
+				} else {
+					defer m.FlushToBadger(db)
+				}
 
 				SetVer(igd.N3id, ver, m) // save id & version into database
 				igd.Version = ver

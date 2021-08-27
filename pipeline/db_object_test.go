@@ -14,10 +14,6 @@ import (
 func TestJsonFromDB(t *testing.T) {
 	wp.SetWorkPath("../")
 
-	// set up a context to manage ingest pipeline
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	defer cancelFunc()
-
 	// monitor all error channels
 	var cErrList []<-chan error
 
@@ -26,6 +22,10 @@ func TestJsonFromDB(t *testing.T) {
 		panic(err)
 	}
 	defer db.Close()
+
+	// set up a context to manage ingest pipeline
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
 
 	cJson, cErr, err := JsonFromDB(ctx, db,
 		"fake",
@@ -53,10 +53,6 @@ func TestJsonFromDB(t *testing.T) {
 func TestIngestDataFromDB(t *testing.T) {
 	wp.SetWorkPath("../")
 
-	// set up a context to manage ingest pipeline
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	defer cancelFunc()
-
 	// monitor all error channels
 	var cErrList []<-chan error
 
@@ -65,6 +61,10 @@ func TestIngestDataFromDB(t *testing.T) {
 		panic(err)
 	}
 	defer db.Close()
+
+	// set up a context to manage ingest pipeline
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
 
 	cIgd, cErr, err := IngestDataFromDB(ctx, db,
 		"fake",
@@ -80,7 +80,7 @@ func TestIngestDataFromDB(t *testing.T) {
 		for igd := range cIgd {
 			if igd != nil {
 				igd.Print("")
-				// fmt.Println(igd)
+				fmt.Println(igd)
 			} else {
 				fmt.Println("\nnil igd")
 			}
