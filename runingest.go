@@ -27,7 +27,6 @@ var (
 //
 // db - instance of a badger db
 // wb - badger.WriteBatch, a fast write manager provided by the db
-// sbf - bloom filter used to capture required graph links as data traverses the pipeline
 // r - the io.Reader (file, http body etc.) to be ingested
 // auditLevel - one of: none, basic, high
 //
@@ -96,11 +95,14 @@ func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 		if err := wb.Flush(); err != nil { // save 'triples' & 'link-candidates' into badger
 			panic("*** write batch flush panic ***")
 		}
-		// wb = db.NewWriteBatch() // reset write batch
-		// pl.LinkBuilder(db, wb)  // update database for creating linkage
-		// wb.Flush()              // save 'links' into badger
 	}()
 
 	// monitor progress
 	return helper.WaitForPipeline(cErrList...)
+}
+
+func RunLinkBuilder(db *badger.DB) {
+	wb := db.NewWriteBatch() // reset write batch
+	defer wb.Flush()         // save 'links' into badger
+	pl.LinkBuilder(db, wb)   // update database for creating linkage
 }

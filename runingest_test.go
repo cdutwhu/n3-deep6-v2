@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
 	dbset "github.com/digisan/data-block/store/db"
 )
@@ -19,15 +18,15 @@ func TestRunIngestWithReader(t *testing.T) {
 	// impl.SetPrint(true)
 
 	sampleDataPaths := []string{
-		// "./test_data/naplan/sif.json",
-		// "./test_data/sif/sif.json",
-		// "./test_data/xapi/xapi.json",
-		// "./test_data/subjects/subjects.json",
-		// "./test_data/lessons/lessons.json",
-		// "./test_data/curriculum/overview.json",
-		// "./test_data/curriculum/content.json",
-		// "./test_data/otf/mapping1.json",
-		// "./test_data/otf/mapping2.json",
+		"./test_data/naplan/sif.json",
+		"./test_data/sif/sif.json",
+		"./test_data/xapi/xapi.json",
+		"./test_data/subjects/subjects.json",
+		"./test_data/lessons/lessons.json",
+		"./test_data/curriculum/overview.json",
+		"./test_data/curriculum/content.json",
+		"./test_data/otf/mapping1.json",
+		"./test_data/otf/mapping2.json",
 		"./test_data/mixed.json",
 	}
 
@@ -65,7 +64,5 @@ func TestLinkBuilder(t *testing.T) {
 	}
 	defer db.Close()
 
-	wb := db.NewWriteBatch() // reset write batch
-	pl.LinkBuilder(db, wb)   // update database for creating linkage
-	wb.Flush()               // save 'links' into badger
+	RunLinkBuilder(db)
 }

@@ -60,14 +60,6 @@ func TestIdStatus(t *testing.T) {
 			},
 			want: None,
 		},
-		{
-			name: "IdStatus",
-			args: args{
-				id: "0054EB5F-07E6-4A26-84FA-2ADDBF5D84E8",
-				db: db,
-			},
-			want: None,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

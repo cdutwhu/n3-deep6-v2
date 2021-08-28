@@ -19,6 +19,21 @@ const (
 	Unknown  status = 3
 )
 
+func (sta status) String() string {
+	switch sta {
+	case None:
+		return "None"
+	case Active:
+		return "Active"
+	case Inactive:
+		return "Inactive"
+	case Unknown:
+		return "Unknown"
+	default:
+		return "Unknown"
+	}
+}
+
 const (
 	verDeleted = int64(0)  // Mark '0' means deleted or inactive
 	verErased  = int64(-1) // Mark '-1' means erased

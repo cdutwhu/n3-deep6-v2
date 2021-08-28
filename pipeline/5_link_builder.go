@@ -19,7 +19,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 
 	m := impl.NewM()
 	if wb != nil {
-		defer m.SyncToBadgerWriteBatch(wb)
+		defer m.SyncToBadgerWriteBatch(wb) // wb.Flush in out caller
 	} else {
 		defer m.FlushToBadger(db)
 	}
@@ -32,7 +32,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 
 		for k := range fdBuf {
 			t := dd.ParseTripleLinkCandidate(k.(string))
-			fmt.Printf("Link Value: %s\n", t.O)
+			// fmt.Printf("Link Value: %s\n", t.O)
 
 			if foreignKeyVal := t.O; len(foreignKeyVal) > 0 {
 				prefix := fmt.Sprintf("ops|%s|", foreignKeyVal)
