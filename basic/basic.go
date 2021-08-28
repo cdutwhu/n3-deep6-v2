@@ -99,15 +99,14 @@ func MarkErase(id string, m *impl.M) *impl.M {
 }
 
 func CurVer(id string, mIdVer map[string]int64, db *badger.DB) (int64, error) {
-	key := id4v(id)
-
 	if mIdVer != nil {
-		if ver, ok := mIdVer[key]; ok && ver > 0 { // active version
+		if ver, ok := mIdVer[id]; ok && ver > 0 { // active version
 			return ver, nil
 		}
 		return 0, nil
 	}
 
+	key := id4v(id)
 	mIdVerBuf, err := dbset.BadgerSearchByKey(db, key, FnVerActive) // active version
 	if err != nil {
 		return -1, err
@@ -119,15 +118,14 @@ func CurVer(id string, mIdVer map[string]int64, db *badger.DB) (int64, error) {
 }
 
 func InactiveCheck(id string, mIdVer map[string]int64, db *badger.DB) bool {
-	key := id4v(id)
-
 	if mIdVer != nil {
-		if ver, ok := mIdVer[key]; ok && ver == int64(0) { // inactive version
+		if ver, ok := mIdVer[id]; ok && ver == int64(0) { // inactive version
 			return true
 		}
 		return false
 	}
 
+	key := id4v(id)
 	mIdVerBuf, err := dbset.BadgerSearchByKey(db, key, FnVerInactive) // inactive version
 	if err == nil {
 		if _, ok := mIdVerBuf[key]; ok {

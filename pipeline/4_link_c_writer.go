@@ -42,8 +42,10 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer map[string]i
 			}
 			// at the first ingest for a new id, db has no record; we set it to 1.
 			// DO NOT modify mIdVer for map safety reason
-			if ver == int64(0) {
-				ver = int64(1)
+			if mIdVer != nil {
+				if ver == int64(0) {
+					ver = int64(1)
+				}
 			}
 
 			func() {

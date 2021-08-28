@@ -193,4 +193,5 @@ func TestBadgerDump(t *testing.T) {
 	if dbset.BadgerDumpFile(db, dumpfile) != nil {
 		panic("BadgerDumpFile Panic")
 	}
+	fmt.Println("raw data dumped")
 }

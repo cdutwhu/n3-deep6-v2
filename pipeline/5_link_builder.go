@@ -25,7 +25,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 	}
 
 	for id, ver := range mIdVer {
-		fmt.Println("\nID:", id)
+		// fmt.Println("\nID:", id)
 
 		prefix := fmt.Sprintf("lc-spo|%s|", id)
 		fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool { return v.(int64) == ver })
@@ -42,6 +42,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 					t := dd.ParseTripleData(k.(string))
 					if t.S != id {
 						// fmt.Printf("foreign ID [%s] takes [%s]\n", t.S, foreignKeyVal)
+
 						link := dd.Triple{
 							S: id,            // who
 							P: foreignKeyVal, // which value
