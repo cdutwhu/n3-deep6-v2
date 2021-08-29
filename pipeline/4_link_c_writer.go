@@ -53,6 +53,7 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb
 			if ver == int64(0) {
 				ver = int64(1)
 			}
+			igd.Version = ver // for getting IngestData From DB
 
 			func() {
 				m := impl.NewM()
