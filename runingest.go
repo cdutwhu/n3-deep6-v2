@@ -26,7 +26,6 @@ var (
 // but db can also be in use to support queries in parallel.
 //
 // db - instance of a badger db
-// wb - badger.WriteBatch, a fast write manager provided by the db
 // r - the io.Reader (file, http body etc.) to be ingested
 // auditLevel - one of: none, basic, high
 //
@@ -96,6 +95,18 @@ func RunIngest(ctx context.Context, r io.Reader, db *badger.DB) (err error) {
 			panic("*** write batch flush panic ***")
 		}
 	}()
+
+	//
+	// do this at database idle time
+	//
+	// if err = helper.WaitForPipeline(cErrList...); err == nil {
+	// 	done := make(chan struct{})
+	// 	go func() {
+	// 		RunLinkBuilder(db) // update database linkages
+	// 		done <- struct{}{}
+	// 	}()
+	// 	<-done
+	// }
 
 	// monitor progress
 	return helper.WaitForPipeline(cErrList...)

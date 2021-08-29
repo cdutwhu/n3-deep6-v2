@@ -22,16 +22,19 @@ func TestMapAllId(t *testing.T) {
 
 	fmt.Println("\n------------------------ object id list:         ------------------------")
 
-	mIdVer, err := MapAllId(db, false)
+	mIdVer, err := MapAllId(db, true)
 	if err != nil {
 		panic(err)
 	}
 	I := 1
-	for id, ver := range mIdVer {
+	mIdVer.Range(func(id, ver interface{}) bool {
 		fmt.Printf("%s @ %d @ %d\n", id, ver, I)
 		I++
-	}
+		return true
+	})
 }
+
+const testID = "0054EB5F-07E6-4A26-84FA-2ADDBF5D84E9"
 
 func TestIdStatus(t *testing.T) {
 	wp.SetWorkPath("../")
@@ -55,7 +58,7 @@ func TestIdStatus(t *testing.T) {
 		{
 			name: "IdStatus",
 			args: args{
-				id: "0054EB5F-07E6-4A26-84FA-2ADDBF5D84E9",
+				id: testID,
 				db: db,
 			},
 			want: None,
@@ -93,7 +96,7 @@ func TestDelObj(t *testing.T) {
 			name: "DelObj",
 			args: args{
 				db:  db,
-				ids: []string{"0054EB5F-07E6-4A26-84FA-2ADDBF5D84E9"},
+				ids: []string{testID},
 			},
 			wantErr: false,
 		},
@@ -130,7 +133,7 @@ func TestEraseObj(t *testing.T) {
 			name: "EraseObj",
 			args: args{
 				db:  db,
-				ids: []string{"0054EB5F-07E6-4A26-84FA-2ADDBF5D84E9"},
+				ids: []string{testID},
 			},
 			wantErr: false,
 		},

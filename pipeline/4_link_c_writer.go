@@ -16,7 +16,7 @@ import (
 // ctx - pipeline management context
 // in - channel providing IngestData objects
 //
-func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer map[string]int64, wb *badger.WriteBatch, in <-chan *dd.IngestData) (
+func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb *badger.WriteBatch, in <-chan *dd.IngestData) (
 	<-chan *dd.IngestData, // new list of triples also containing links
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any errors when creating this component

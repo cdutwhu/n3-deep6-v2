@@ -18,7 +18,7 @@ import (
 // kv - badger.WriteBatch which manages very fast writing to the datastore
 // in - channel providing IngestData objects
 //
-func TripleWriter(ctx context.Context, db *badger.DB, mIdVer map[string]int64, wb *badger.WriteBatch, in <-chan *dd.IngestData) (
+func TripleWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb *badger.WriteBatch, in <-chan *dd.IngestData) (
 	<-chan *dd.IngestData, // pass on to next stage
 	<-chan error, // emits errors encountered to the pipeline
 	error) { // returns any error encountered creating this component

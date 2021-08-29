@@ -33,7 +33,12 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 		for _, id := range ids {
 			prefix := fmt.Sprintf("spo|%s|", id)
-			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool { return v.(int64) == mIdVer[id] })
+			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool {
+				if ver, ok := mIdVer.Get(id); ok {
+					return v.(int64) == ver.(int64)
+				}
+				return false
+			})
 			if err != nil {
 				cErr <- err
 				continue

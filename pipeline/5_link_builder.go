@@ -24,7 +24,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 		defer m.FlushToBadger(db)
 	}
 
-	for id, ver := range mIdVer {
+	mIdVer.Range(func(id, ver interface{}) bool {
 		// fmt.Println("\nID:", id)
 
 		prefix := fmt.Sprintf("lc-spo|%s|", id)
@@ -44,14 +44,15 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 						// fmt.Printf("foreign ID [%s] takes [%s]\n", t.S, foreignKeyVal)
 
 						link := dd.Triple{
-							S: id,            // who
+							S: id.(string),   // who
 							P: foreignKeyVal, // which value
 							O: t.S,           // referred by whom
 						}
-						link.Cache2Link(m, ver)
+						link.Cache2Link(m, ver.(int64))
 					}
 				}
 			}
 		}
-	}
+		return true
+	})
 }
