@@ -23,10 +23,17 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb
 
 	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
+	var err error
 
 	go func() {
 		defer close(cOut)
 		defer close(cErr)
+
+		if mIdVer == nil {
+			if mIdVer, err = MapAllId(db, false); err != nil {
+				return
+			}
+		}
 
 		for igd := range in {
 
@@ -40,12 +47,11 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb
 				cErr <- err
 				continue
 			}
+
 			// at the first ingest for a new id, db has no record; we set it to 1.
 			// DO NOT modify mIdVer for map safety reason
-			if mIdVer != nil {
-				if ver == int64(0) {
-					ver = int64(1)
-				}
+			if ver == int64(0) {
+				ver = int64(1)
 			}
 
 			func() {
@@ -77,5 +83,5 @@ func LinkCandidateWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb
 		}
 	}()
 
-	return cOut, cErr, nil
+	return cOut, cErr, err
 }

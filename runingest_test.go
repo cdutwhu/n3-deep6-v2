@@ -36,6 +36,7 @@ func TestRunIngestWithReader(t *testing.T) {
 	}
 	defer func() { time.Sleep(10 * time.Millisecond); db.Close() }() // cancel pipeline first, then close database
 
+	// ingest all original files
 	for _, datafile := range sampleDataPaths {
 		func() {
 			f, err := os.Open(datafile)

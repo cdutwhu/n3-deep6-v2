@@ -25,14 +25,21 @@ func TripleWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb *badge
 
 	cOut := make(chan *dd.IngestData)
 	cErr := make(chan error, 1)
+	var err error
 
 	go func() {
 		defer close(cOut)
 		defer close(cErr)
 
+		if mIdVer == nil {
+			if mIdVer, err = MapAllId(db, true); err != nil {
+				return
+			}
+		}
+
 		for igd := range in {
 
-			ver, err := NewVer(igd.N3id, mIdVer, db)
+			ver, err := NewVer(igd.N3id, mIdVer, db) // func 'NewVer' auto updates 'mIdVer'
 			if err != nil {
 				log.Fatalf("NewVer for %s error\n", igd.N3id)
 				cOut <- nil
@@ -63,5 +70,5 @@ func TripleWriter(ctx context.Context, db *badger.DB, mIdVer *impl.SM, wb *badge
 		}
 	}()
 
-	return cOut, cErr, nil
+	return cOut, cErr, err
 }

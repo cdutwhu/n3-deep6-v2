@@ -1,4 +1,4 @@
-package pipeline
+package function
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
+	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
 	dbset "github.com/digisan/data-block/store/db"
 	jt "github.com/digisan/json-tool"
@@ -20,14 +21,15 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 	cOut := make(chan string)
 	cErr := make(chan error, 1)
+	var err error
 
 	go func() {
 		defer close(cOut)
 		defer close(cErr)
 
-		mIdVer, err := MapAllId(db, false)
+		mIdVer, e := MapAllId(db, false)
 		if err != nil {
-			cErr <- err
+			err = e
 			return
 		}
 
@@ -62,7 +64,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 		}
 	}()
 
-	return cOut, cErr, nil
+	return cOut, cErr, err
 }
 
 func IngestDataFromDB(ctx context.Context, db *badger.DB, ids ...string) (
@@ -79,19 +81,19 @@ func IngestDataFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 	}
 	cErrList = append(cErrList, cErr)
 
-	cOut, cErr, err := ObjectClassifier(ctx, cJson)
+	cOut, cErr, err := pl.ObjectClassifier(ctx, cJson)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Error: cannot create object-classifier")
 	}
 	cErrList = append(cErrList, cErr)
 
-	cOut, cErr, err = TupleGenerator(ctx, cOut)
+	cOut, cErr, err = pl.TupleGenerator(ctx, cOut)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Error: cannot create tuple-generator component: ")
 	}
 	cErrList = append(cErrList, cErr)
 
-	cOut, cErr, err = LinkCandidateWriter(ctx, nil, nil, nil, cOut)
+	cOut, cErr, err = pl.LinkCandidateWriter(ctx, db, nil, nil, cOut)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Error: cannot create link-parser component: ")
 	}

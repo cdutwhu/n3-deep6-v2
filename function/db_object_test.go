@@ -1,4 +1,4 @@
-package pipeline
+package function
 
 import (
 	"context"
@@ -79,8 +79,7 @@ func TestIngestDataFromDB(t *testing.T) {
 	go func() {
 		for igd := range cIgd {
 			if igd != nil {
-				igd.Print("")
-				fmt.Println(igd)
+				igd.Print("igd", "RawData", "Triples", "LinkCandidates")
 			} else {
 				fmt.Println("\nnil igd")
 			}
