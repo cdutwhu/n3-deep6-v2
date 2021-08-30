@@ -5,9 +5,9 @@ import (
 
 	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
+	"github.com/cdutwhu/n3-deep6-v2/impl"
 	"github.com/dgraph-io/badger/v3"
-	dbset "github.com/digisan/data-block/store/db"
-	"github.com/digisan/data-block/store/impl"
 )
 
 func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
@@ -24,14 +24,14 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 		defer m.FlushToBadger(db)
 	}
 
-	mIdVer.Range(func(id, ver interface{}) bool {
+	mIdVer.Range(func(id string, ver int64) bool {
 		// fmt.Println("\nID:", id)
 
 		prefix := fmt.Sprintf("lc-spo|%s|", id)
-		fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool { return v.(int64) == ver })
+		fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool { return v == ver })
 
 		for k := range fdBuf {
-			t := dd.ParseTripleLinkCandidate(k.(string))
+			t := dd.ParseTripleLinkCandidate(k)
 			// fmt.Printf("Link Value: %s\n", t.O)
 
 			if foreignKeyVal := t.O; len(foreignKeyVal) > 0 {
@@ -39,16 +39,16 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 				fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, FnVerActive)
 
 				for k := range fdBuf {
-					t := dd.ParseTripleData(k.(string))
+					t := dd.ParseTripleData(k)
 					if t.S != id {
 						// fmt.Printf("foreign ID [%s] takes [%s]\n", t.S, foreignKeyVal)
 
 						link := dd.Triple{
-							S: id.(string),   // who
+							S: id,            // who
 							P: foreignKeyVal, // which value
 							O: t.S,           // referred by whom
 						}
-						link.Cache2Link(m, ver.(int64))
+						link.Cache2Link(m, ver)
 					}
 				}
 			}

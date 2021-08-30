@@ -7,7 +7,7 @@ import (
 	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
 	"github.com/dgraph-io/badger/v3"
-	"github.com/digisan/data-block/store/impl"
+	"github.com/cdutwhu/n3-deep6-v2/impl"
 )
 
 //

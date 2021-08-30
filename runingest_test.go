@@ -8,7 +8,7 @@ import (
 	"time"
 
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
-	dbset "github.com/digisan/data-block/store/db"
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
 )
 
 func TestRunIngestWithReader(t *testing.T) {

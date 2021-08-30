@@ -7,7 +7,7 @@ import (
 
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
-	dbset "github.com/digisan/data-block/store/db"
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	jt "github.com/digisan/json-tool"
 )
 

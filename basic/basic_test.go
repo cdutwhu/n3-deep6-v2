@@ -7,7 +7,7 @@ import (
 
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
 	"github.com/dgraph-io/badger/v3"
-	dbset "github.com/digisan/data-block/store/db"
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
 )
 
 func TestMapAllId(t *testing.T) {
@@ -27,7 +27,7 @@ func TestMapAllId(t *testing.T) {
 		panic(err)
 	}
 	I := 1
-	mIdVer.Range(func(id, ver interface{}) bool {
+	mIdVer.Range(func(id string, ver int64) bool {
 		fmt.Printf("%s @ %d @ %d\n", id, ver, I)
 		I++
 		return true

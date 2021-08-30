@@ -21,7 +21,7 @@ func Audit(ctx context.Context, in <-chan *dd.IngestData) (
 		I := 1
 		for igd := range in {
 			if igd != nil {
-				igd.Print(I, "RawBytes", "RawData", "Triples", "LinkCandidates")
+				igd.Print(I, "RawBytes", "RawData", "Triples", "LinkCandidates", "LinkTriples")
 				I++
 
 				select {

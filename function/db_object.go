@@ -9,7 +9,7 @@ import (
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
-	dbset "github.com/digisan/data-block/store/db"
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	jt "github.com/digisan/json-tool"
 	"github.com/pkg/errors"
 )
@@ -35,9 +35,9 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 		for _, id := range ids {
 			prefix := fmt.Sprintf("spo|%s|", id)
-			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool {
+			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool {
 				if ver, ok := mIdVer.Get(id); ok {
-					return v.(int64) == ver.(int64)
+					return v == ver
 				}
 				return false
 			})
@@ -52,7 +52,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 			m4com := make(map[string]interface{})
 			for k := range m {
-				t := dd.ParseTripleData(k.(string))
+				t := dd.ParseTripleData(k)
 				m4com[t.P] = t.O
 			}
 

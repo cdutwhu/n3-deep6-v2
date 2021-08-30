@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/digisan/data-block/store/impl"
+	"github.com/cdutwhu/n3-deep6-v2/impl"
 )
 
 // hexa-tuples

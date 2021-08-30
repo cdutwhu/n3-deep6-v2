@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
+	"github.com/cdutwhu/n3-deep6-v2/impl"
 	"github.com/dgraph-io/badger/v3"
-	dbset "github.com/digisan/data-block/store/db"
-	"github.com/digisan/data-block/store/impl"
 	"github.com/pkg/errors"
 )
 
@@ -74,9 +74,9 @@ func lPrefixWrap(prefix ...string) (plGrp []string) {
 }
 
 var (
-	FnVerActive   = func(k, v interface{}) bool { return v.(int64) > 0 }
-	FnVerInactive = func(k, v interface{}) bool { return v.(int64) == int64(0) }
-	FnVerToErase  = func(k, v interface{}) bool { return v.(int64) < 0 }
+	FnVerActive   = func(k string, v int64) bool { return v > 0 }
+	FnVerInactive = func(k string, v int64) bool { return v == int64(0) }
+	FnVerToErase  = func(k string, v int64) bool { return v < 0 }
 )
 
 func id4v(id string) string {
@@ -113,7 +113,7 @@ func MapAllId(db *badger.DB, inclInactive bool) (mIdVer *impl.SM, err error) {
 	mIdVer = impl.NewSM()
 	i := len(prefixId)
 	for k, v := range m {
-		mIdVer.Set(k.(string)[i:], v.(int64))
+		mIdVer.Set(k[i:], v)
 	}
 	return
 }
@@ -140,8 +140,8 @@ func NewVer(id string, mIdVer *impl.SM, db *badger.DB) (int64, error) {
 
 func CurVer(id string, mIdVer *impl.SM, db *badger.DB) (int64, error) {
 	if mIdVer != nil {
-		if ver, ok := mIdVer.Get(id); ok && ver.(int64) > 0 { // active version
-			return ver.(int64), nil
+		if ver, ok := mIdVer.Get(id); ok && ver > 0 { // active version
+			return ver, nil
 		}
 		return 0, nil
 	}
@@ -152,14 +152,14 @@ func CurVer(id string, mIdVer *impl.SM, db *badger.DB) (int64, error) {
 		return -1, err
 	}
 	if ver, ok := mIdVerBuf[key]; ok {
-		return ver.(int64), nil
+		return ver, nil
 	}
 	return 0, nil
 }
 
 func InactiveCheck(id string, mIdVer *impl.SM, db *badger.DB) bool {
 	if mIdVer != nil {
-		if ver, ok := mIdVer.Get(id); ok && ver.(int64) == int64(0) { // inactive version
+		if ver, ok := mIdVer.Get(id); ok && ver == int64(0) { // inactive version
 			return true
 		}
 		return false
@@ -244,9 +244,9 @@ func CleanupErased(db *badger.DB) error {
 	// 		mErased[k] = struct{}{}
 	// 	}
 	// }
-	m.Range(func(k, v interface{}) bool {
+	m.Range(func(k string, v int64) bool {
 		if v == verErased {
-			mErased[k.(string)] = struct{}{}
+			mErased[k] = struct{}{}
 		}
 		return true
 	})
@@ -260,14 +260,14 @@ func CleanupErased(db *badger.DB) error {
 		fmt.Println("\nCould be real erased in database:", id)
 
 		for _, prefix := range prefixAll {
-			mIdVerBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(k, v interface{}) bool {
-				return strings.Contains(k.(string), "|"+id)
+			mIdVerBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool {
+				return strings.Contains(k, "|"+id)
 			})
 			if err != nil {
 				fmt.Println(err)
 			}
 			for k := range mIdVerBuf {
-				mErasedDB.Set(k, struct{}{})
+				mErasedDB.Set(k, int64(0))
 				// fmt.Println("deleted:", k)
 			}
 		}
