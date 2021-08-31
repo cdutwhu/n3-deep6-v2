@@ -50,7 +50,16 @@ func TestFindByType(t *testing.T) {
 			args: args{
 				byWhat: "Value",
 				db:     db,
-				arg:    "Marjorie Amaya",
+				arg:    "Mathematics",
+			},
+			want: "",
+		},
+		{
+			name: "FindByPredicate",
+			args: args{
+				byWhat: "Predicate",
+				db:     db,
+				arg:    "StudentPersonal.LocalIdXXX",
 			},
 			want: "",
 		},

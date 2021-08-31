@@ -25,6 +25,8 @@ func GetIDbyX(byWhat string, db *badger.DB, args ...string) map[string][]string 
 			prefix = fmt.Sprintf("pos|is-a|%s|", arg)
 		case "VALUE", "Value", "value":
 			prefix = fmt.Sprintf("osp|%s|", arg)
+		case "PREDICATE", "Predicate", "predicate":
+			prefix = fmt.Sprintf("pso|%s", arg)
 		default:
 			panic(fmt.Sprintf("Unsupported 'byWhat'@ %v", byWhat))
 		}

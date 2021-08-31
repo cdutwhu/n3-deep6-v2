@@ -138,6 +138,16 @@ func TestGetIDbyX(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "GetIDsByPredicate",
+			args: args{
+				arg: "Predicate",
+				db:  db,
+				types: []string{
+					"TeachingGroup.ShortName",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
