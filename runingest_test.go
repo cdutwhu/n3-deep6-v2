@@ -19,14 +19,14 @@ func TestRunIngestWithReader(t *testing.T) {
 
 	sampleDataPaths := []string{
 		// "./test_data/naplan/sif.json",
-		"./test_data/sif/sif.json",
-		"./test_data/xapi/xapi.json",
-		"./test_data/subjects/subjects.json",
-		"./test_data/lessons/lessons.json",
-		"./test_data/curriculum/overview.json",
-		"./test_data/curriculum/content.json",
-		"./test_data/otf/mapping1.json",
-		"./test_data/otf/mapping2.json",
+		// "./test_data/sif/sif.json",
+		// "./test_data/xapi/xapi.json",
+		// "./test_data/subjects/subjects.json",
+		// "./test_data/lessons/lessons.json",
+		// "./test_data/curriculum/overview.json",
+		// "./test_data/curriculum/content.json",
+		// "./test_data/otf/mapping1.json",
+		// "./test_data/otf/mapping2.json",
 		"./test_data/mixed.json",
 	}
 

@@ -6,10 +6,10 @@ import (
 
 	. "github.com/cdutwhu/n3-deep6-v2/basic"
 	dd "github.com/cdutwhu/n3-deep6-v2/datadef"
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
-	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	jt "github.com/digisan/json-tool"
 	"github.com/pkg/errors"
 )
@@ -34,18 +34,17 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 		}
 
 		for _, id := range ids {
+
+			ver, _ := mIdVer.Get(id)
 			prefix := fmt.Sprintf("spo|%s|", id)
 			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool {
-				if ver, ok := mIdVer.Get(id); ok {
-					return v == ver
-				}
-				return false
+				return v == ver
 			})
 			if err != nil {
 				cErr <- err
 				continue
 			}
-			if len(m) == 0 { // if id was not found, inflate empty string
+			if len(m) == 0 { // if tuple not found, inflate empty string
 				cOut <- ""
 				continue
 			}
@@ -57,7 +56,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 			}
 
 			select {
-			case cOut <- jt.Composite(m4com): // pass the data on to the next stage
+			case cOut <- jt.Composite(m4com): // pass data to next stage
 			case <-ctx.Done(): // listen for pipeline shutdown
 				return
 			}

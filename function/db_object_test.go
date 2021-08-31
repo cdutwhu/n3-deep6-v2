@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
-	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	jt "github.com/digisan/json-tool"
 )
 
@@ -79,7 +79,7 @@ func TestIngestDataFromDB(t *testing.T) {
 	go func() {
 		for igd := range cIgd {
 			if igd != nil {
-				igd.Print("igd", "RawData", "Triples", "LinkCandidates")
+				igd.Print("", "RawBytes1", "RawData1", "Triples1", "LinkCandidates1")
 			} else {
 				fmt.Println("\nnil igd")
 			}

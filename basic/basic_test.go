@@ -61,7 +61,7 @@ func TestIdStatus(t *testing.T) {
 				id: testID,
 				db: db,
 			},
-			want: None,
+			want: Active,
 		},
 	}
 	for _, tt := range tests {

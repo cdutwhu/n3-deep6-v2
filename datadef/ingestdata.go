@@ -108,9 +108,9 @@ type IngestData struct {
 func (igd *IngestData) Print(msg interface{}, excl ...string) {
 
 	const (
-		format      = "\n%-30s%v"
-		formatFirst = "%-30s%v"
-		formatLast  = "\n%-30s%v"
+		format      = "\n%-30s%-5v"
+		formatFirst = "%-30s%-5v"
+		formatLast  = "\n%-30s%-5v"
 	)
 
 	fmt.Printf("\n\n%[1]v %[2]s %[1]v", msg, strings.Repeat("-", 120))
