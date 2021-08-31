@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
 	"github.com/cdutwhu/n3-deep6-v2/dbset"
+	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
 )
 
 func TestRunIngestWithReader(t *testing.T) {

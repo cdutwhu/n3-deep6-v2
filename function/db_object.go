@@ -10,17 +10,59 @@ import (
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	pl "github.com/cdutwhu/n3-deep6-v2/pipeline"
 	"github.com/dgraph-io/badger/v3"
+	"github.com/digisan/gotk/slice/ts"
 	jt "github.com/digisan/json-tool"
 	"github.com/pkg/errors"
 )
+
+func GetIDbyX(byWhat string, db *badger.DB, args ...string) map[string][]string {
+	ret := make(map[string][]string)
+	prefix := ""
+	for _, arg := range ts.MkSet(args...) {
+
+		switch byWhat {
+		case "TYPE", "Type", "type":
+			prefix = fmt.Sprintf("pos|is-a|%s|", arg)
+		case "VALUE", "Value", "value":
+			prefix = fmt.Sprintf("osp|%s|", arg)
+		default:
+			panic(fmt.Sprintf("Unsupported 'byWhat'@ %v", byWhat))
+		}
+
+		m, err := dbset.BadgerSearchByPrefix(db, prefix, nil)
+		if err != nil {
+			continue
+		}
+
+		ids := []string{}
+		for key := range m {
+			t := dd.ParseTripleData(key)
+			ids = append(ids, t.S)
+		}
+		ret[arg] = ts.MkSet(ids...)
+	}
+	return ret
+}
+
+func JsonFromDBbyX(byWhat string, ctx context.Context, db *badger.DB, args ...string) (
+	<-chan string,
+	<-chan error,
+	error) {
+
+	idGrp := []string{}
+	for _, ids := range GetIDbyX(byWhat, db, args...) {
+		idGrp = append(idGrp, ids...)
+	}
+	return JsonFromDB(ctx, db, idGrp...)
+}
 
 func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 	<-chan string,
 	<-chan error,
 	error) {
 
-	cOut := make(chan string)
-	cErr := make(chan error, 1)
+	cOut := make(chan string)   // json channel
+	cErr := make(chan error, 1) // error channel
 	var err error
 
 	go func() {
@@ -37,9 +79,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 			ver, _ := mIdVer.Get(id)
 			prefix := fmt.Sprintf("spo|%s|", id)
-			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool {
-				return v == ver
-			})
+			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool { return v == ver })
 			if err != nil {
 				cErr <- err
 				continue

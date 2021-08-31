@@ -8,6 +8,7 @@ import (
 	"github.com/cdutwhu/n3-deep6-v2/dbset"
 	"github.com/cdutwhu/n3-deep6-v2/helper"
 	wp "github.com/cdutwhu/n3-deep6-v2/workpath"
+	"github.com/dgraph-io/badger/v3"
 	jt "github.com/digisan/json-tool"
 )
 
@@ -89,4 +90,65 @@ func TestIngestDataFromDB(t *testing.T) {
 
 	// monitor progress
 	helper.WaitForPipeline(cErrList...)
+}
+
+func TestGetIDbyX(t *testing.T) {
+	wp.SetWorkPath("../")
+
+	db, err := dbset.NewBadgerDB(wp.DBP())
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	type args struct {
+		arg   string
+		db    *badger.DB
+		types []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string][]string
+	}{
+		// TODO: Add test cases.
+		{
+			name: "GetIDsByType",
+			args: args{
+				arg: "Type",
+				db:  db,
+				types: []string{
+					"XAPI",
+					"StudentPersonal",
+					"GradingAssignment",
+					"TeachingGroup",
+					"Syllabus",
+					"JSON",
+				},
+			},
+		},
+		{
+			name: "GetIDsByValue",
+			args: args{
+				arg: "Value",
+				db:  db,
+				types: []string{
+					"marjorie45@trashymail.com",
+					"LGL",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := GetIDbyX(tt.args.arg, tt.args.db, tt.args.types...)
+			for k, v := range m {
+				fmt.Println(k)
+				for _, id := range v {
+					fmt.Printf("  %v\n", id)
+				}
+			}
+			fmt.Println("-------------------------------------------------------")
+		})
+	}
 }
