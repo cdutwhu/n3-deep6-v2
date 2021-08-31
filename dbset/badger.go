@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"sync"
 
 	"github.com/cdutwhu/n3-deep6-v2/impl"
 	"github.com/dgraph-io/badger/v3"
@@ -65,29 +64,10 @@ func RemoveToBadger(kv impl.Ikv, db *badger.DB) error {
 	wb := db.NewWriteBatch()
 	defer wb.Flush()
 
-	switch m := kv.(type) {
-	case *impl.M:
-		for key := range *m {
-			kp, err := impl.DBPrefix(key)
-			if err != nil {
-				panic(errors.Wrap(err, "key type is not supported @ M RemoveToBadger"))
-			}
-			kBuf := append([]byte{kp}, []byte(fmt.Sprint(key))...)
-			wb.Delete(kBuf)
-		}
-	case *impl.SM:
-		((*sync.Map)(m)).Range(func(key, value interface{}) bool {
-			kp, err := impl.DBPrefix(key)
-			if err != nil {
-				panic(errors.Wrap(err, "key type is not supported @ SM RemoveToBadger"))
-			}
-			kBuf := append([]byte{kp}, []byte(fmt.Sprint(key))...)
-			wb.Delete(kBuf)
-			return true
-		})
-	default:
-		panic("kv must be map or sync.Map")
-	}
+	kv.Range(func(key string, value int64) bool {
+		wb.Delete([]byte("s" + key))
+		return true
+	})
 
 	return nil
 }

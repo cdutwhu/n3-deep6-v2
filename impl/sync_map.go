@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/pkg/errors"
 )
 
 type SM sync.Map
@@ -78,22 +77,13 @@ func (sm *SM) SyncToBadgerWriteBatch(wb *badger.WriteBatch) (err error) {
 	}
 
 	sm.Range(func(key string, value int64) bool {
-		kp, e := DBPrefix(key)
-		if e != nil {
-			panic(errors.Wrap(e, "key type is not supported @ SM FlushToBadger"))
-		}
-		vp, e := DBPrefix(value)
-		if e != nil {
-			panic(errors.Wrap(e, "value type is not supported @ SM FlushToBadger"))
-		}
-		kBuf := append([]byte{kp}, []byte(fmt.Sprint(key))...)
-		vBuf := append([]byte{vp}, []byte(fmt.Sprint(value))...)
+		kBuf := []byte("s" + key)
+		vBuf := []byte("i" + fmt.Sprint(value))
 		if err = wb.Set(kBuf, vBuf); err != nil {
 			return false
 		}
 		return true
 	})
-
 	return err
 }
 

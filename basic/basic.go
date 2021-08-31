@@ -239,11 +239,6 @@ func CleanupErased(db *badger.DB) error {
 	}
 
 	mErased := make(map[string]struct{})
-	// for k, v := range m {
-	// 	if v == verErased {
-	// 		mErased[k] = struct{}{}
-	// 	}
-	// }
 	m.Range(func(k string, v int64) bool {
 		if v == verErased {
 			mErased[k] = struct{}{}
