@@ -8,7 +8,7 @@ import (
 	jt "github.com/digisan/json-tool"
 )
 
-func FindByX(byWhat string, db *badger.DB, arg string) string {
+func FindByX(byWhat string, db *badger.DB, arg string) (ret []string) {
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
@@ -20,10 +20,20 @@ func FindByX(byWhat string, db *badger.DB, arg string) string {
 		}
 	}()
 
-	select {
-	case err = <-cErr:
-		return ""
-	case ret := <-cJson:
-		return jt.TryFmtStr(ret, "\t")
+ERR_CHK:
+	for {
+		select {
+		case err := <-cErr:
+			fmt.Println(err)
+			return nil
+		default:
+			break ERR_CHK
+		}
 	}
+
+	for j := range cJson {
+		ret = append(ret, jt.TryFmtStr(j, "\t"))
+	}
+
+	return
 }

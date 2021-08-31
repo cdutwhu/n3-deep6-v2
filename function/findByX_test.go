@@ -35,7 +35,8 @@ func TestFindByType(t *testing.T) {
 			args: args{
 				byWhat: "Type",
 				db:     db,
-				arg:    "Syllabus",
+				arg:    "TeachingGroup",
+				// "Syllabus",
 				// "XAPI",
 				// "StudentPersonal",
 				// "GradingAssignment",
@@ -59,14 +60,17 @@ func TestFindByType(t *testing.T) {
 			args: args{
 				byWhat: "Predicate",
 				db:     db,
-				arg:    "StudentPersonal.LocalIdXXX",
+				arg:    "StudentPersonal.LocalId",
 			},
 			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fmt.Println(FindByX(tt.args.byWhat, tt.args.db, tt.args.arg))
+			for i, obj := range FindByX(tt.args.byWhat, tt.args.db, tt.args.arg) {
+				fmt.Println(i)
+				fmt.Println(obj)
+			}			
 			fmt.Println("----------------------------------------------")
 		})
 	}
