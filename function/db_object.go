@@ -71,6 +71,11 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 		defer close(cOut)
 		defer close(cErr)
 
+		var exclPathGrp = []string{
+			"unique",
+			"is-a",
+		}
+
 		mIdVer, e := MapAllId(db, false)
 		if err != nil {
 			err = e
@@ -98,7 +103,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 			}
 
 			select {
-			case cOut <- jt.Composite(m4com): // pass data to next stage
+			case cOut <- jt.CompositeExcl(m4com, exclPathGrp...): // pass data to next stage
 			case <-ctx.Done(): // listen for pipeline shutdown
 				return
 			}

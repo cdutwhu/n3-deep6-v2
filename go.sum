@@ -28,8 +28,8 @@ github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2/go.mod h1:SqUrOPUn
 github.com/digisan/gotk v0.0.26/go.mod h1:UQ8YCI0uvFowgH6q7cI6FGDy2vMLmCIgLb/E3HqkUU0=
 github.com/digisan/gotk v0.0.33 h1:CmZEXNwqMLWoVlScn6acgZoM/4LrhR5TcKz7MN3ID/s=
 github.com/digisan/gotk v0.0.33/go.mod h1:UQ8YCI0uvFowgH6q7cI6FGDy2vMLmCIgLb/E3HqkUU0=
-github.com/digisan/json-tool v0.0.9 h1:OosQI+3jSh9ahZa0AiwM/GBVQ/1RLCCvPZcI0z1V35U=
-github.com/digisan/json-tool v0.0.9/go.mod h1:TUcjGPavlCz2kAhRrJWJAynCfOBgOKCNVoCIgQAcj2I=
+github.com/digisan/json-tool v0.0.10 h1:iu4wLqYMlSFSsqALmzFG9N5BdISv1/umnl1CMsNIEO0=
+github.com/digisan/json-tool v0.0.10/go.mod h1:TUcjGPavlCz2kAhRrJWJAynCfOBgOKCNVoCIgQAcj2I=
 github.com/digisan/logkit v0.0.2 h1:j+3fRoq+QSaiqXoxQGsEejN4b9A+TGFV2GzzP9PVNfI=
 github.com/digisan/logkit v0.0.2/go.mod h1:mJ/Ipl9Cu/xSs+IYHBokxR0BMO+fgYWECD4qhn1YtWc=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=

@@ -35,7 +35,7 @@ func TestFindByType(t *testing.T) {
 			args: args{
 				byWhat: "Type",
 				db:     db,
-				arg:    "TeachingGroup",
+				arg:    "StudentPersonal",
 				// "Syllabus",
 				// "XAPI",
 				// "StudentPersonal",
