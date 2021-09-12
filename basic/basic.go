@@ -40,33 +40,33 @@ const (
 )
 
 const (
-	sep       = "|"
-	prefixId  = "s" + sep
-	prefixSPO = "spo" + sep
-	prefixSOP = "sop" + sep
-	prefixPSO = "pso" + sep
-	prefixPOS = "pos" + sep
-	prefixOSP = "osp" + sep
-	prefixOPS = "ops" + sep
+	sep    = "|"
+	pfxId  = "s" + sep
+	pfxSPO = "spo" + sep
+	pfxSOP = "sop" + sep
+	pfxPSO = "pso" + sep
+	pfxPOS = "pos" + sep
+	pfxOSP = "osp" + sep
+	pfxOPS = "ops" + sep
 )
 
-var prefixData = []string{
-	prefixSPO,
-	prefixSOP,
-	prefixPSO,
-	prefixPOS,
-	prefixOSP,
-	prefixOPS,
+var pfxData = []string{
+	pfxSPO,
+	pfxSOP,
+	pfxPSO,
+	pfxPOS,
+	pfxOSP,
+	pfxOPS,
 }
 
-func lcPrefixWrap(prefix ...string) (plcGrp []string) {
+func lcPfxWrap(prefix ...string) (plcGrp []string) {
 	for _, p := range prefix {
 		plcGrp = append(plcGrp, "lc-"+p)
 	}
 	return
 }
 
-func lPrefixWrap(prefix ...string) (plGrp []string) {
+func lPfxWrap(prefix ...string) (plGrp []string) {
 	for _, p := range prefix {
 		plGrp = append(plGrp, "l-"+p)
 	}
@@ -80,7 +80,7 @@ var (
 )
 
 func id4v(id string) string {
-	return fmt.Sprintf("%s%s", prefixId, id)
+	return fmt.Sprintf("%s%s", pfxId, id)
 }
 
 func SetVer(id string, ver int64, m *impl.M) *impl.M {
@@ -105,13 +105,13 @@ func MapAllId(db *badger.DB, inclInactive bool) (mIdVer *impl.SM, err error) {
 		filter = nil // all version
 	}
 
-	m, err := dbset.BadgerSearchByPrefix(db, prefixId, filter)
+	m, err := dbset.BadgerSearchByPfx(db, pfxId, filter)
 	if err != nil {
 		return nil, err
 	}
 
 	mIdVer = impl.NewSM()
-	i := len(prefixId)
+	i := len(pfxId)
 	for k, v := range m {
 		mIdVer.Set(k[i:], v)
 	}
@@ -246,16 +246,16 @@ func CleanupErased(db *badger.DB) error {
 		return true
 	})
 
-	prefixAll := append([]string{prefixId}, prefixData...)
-	prefixAll = append(prefixAll, lcPrefixWrap(prefixData...)...)
-	prefixAll = append(prefixAll, lPrefixWrap(prefixData...)...)
+	pfxAll := append([]string{pfxId}, pfxData...)
+	pfxAll = append(pfxAll, lcPfxWrap(pfxData...)...)
+	pfxAll = append(pfxAll, lPfxWrap(pfxData...)...)
 
 	mErasedDB := impl.NewM()
 	for id := range mErased {
 		fmt.Println("\nCould be real erased in database:", id)
 
-		for _, prefix := range prefixAll {
-			mIdVerBuf, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool {
+		for _, pfx := range pfxAll {
+			mIdVerBuf, err := dbset.BadgerSearchByPfx(db, pfx, func(k string, v int64) bool {
 				return strings.Contains(k, "|"+id)
 			})
 			if err != nil {

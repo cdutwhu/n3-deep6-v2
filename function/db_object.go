@@ -17,21 +17,21 @@ import (
 
 func GetIDbyX(byWhat string, db *badger.DB, args ...string) map[string][]string {
 	ret := make(map[string][]string)
-	prefix := ""
+	pfx := ""
 	for _, arg := range ts.MkSet(args...) {
 
 		switch byWhat {
 		case "TYPE", "Type", "type":
-			prefix = fmt.Sprintf("pos|is-a|%s|", arg)
+			pfx = fmt.Sprintf("pos|is-a|%s|", arg)
 		case "VALUE", "Value", "value":
-			prefix = fmt.Sprintf("osp|%s|", arg)
+			pfx = fmt.Sprintf("osp|%s|", arg)
 		case "PREDICATE", "Predicate", "predicate":
-			prefix = fmt.Sprintf("pso|%s", arg)
+			pfx = fmt.Sprintf("pso|%s", arg)
 		default:
 			panic(fmt.Sprintf("Unsupported 'byWhat'@ %v", byWhat))
 		}
 
-		m, err := dbset.BadgerSearchByPrefix(db, prefix, nil)
+		m, err := dbset.BadgerSearchByPfx(db, pfx, nil)
 		if err != nil {
 			continue
 		}
@@ -85,8 +85,8 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 		for _, id := range ids {
 
 			ver, _ := mIdVer.Get(id)
-			prefix := fmt.Sprintf("spo|%s|", id)
-			m, err := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool { return v == ver })
+			pfx := fmt.Sprintf("spo|%s|", id)
+			m, err := dbset.BadgerSearchByPfx(db, pfx, func(k string, v int64) bool { return v == ver })
 			if err != nil {
 				cErr <- err
 				continue

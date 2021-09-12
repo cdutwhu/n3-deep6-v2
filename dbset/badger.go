@@ -184,19 +184,19 @@ func SyncFromBadgerByKey(kv impl.Ikv, db *badger.DB, key string, vFilter func(k 
 	})
 }
 
-func BadgerSearchByPrefix(db *badger.DB, prefix string, vFilter func(k string, v int64) bool) (map[string]int64, error) {
+func BadgerSearchByPfx(db *badger.DB, prefix string, vFilter func(k string, v int64) bool) (map[string]int64, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db is nil, found nothing")
 	}
 
 	m := impl.NewM()
-	err := SyncFromBadgerByPrefix(m, db, prefix, vFilter)
+	err := SyncFromBadgerByPfx(m, db, prefix, vFilter)
 	return (map[string]int64)(*m), err
 }
 
 // only string key available for prefix search
 // vFilter args number must be converted to [int64], [float64]
-func SyncFromBadgerByPrefix(kv impl.Ikv, db *badger.DB, prefix string, vFilter func(k string, v int64) bool) error {
+func SyncFromBadgerByPfx(kv impl.Ikv, db *badger.DB, prefix string, vFilter func(k string, v int64) bool) error {
 	if db == nil {
 		return fmt.Errorf("db is nil, sync nothing")
 	}
@@ -208,8 +208,8 @@ func SyncFromBadgerByPrefix(kv impl.Ikv, db *badger.DB, prefix string, vFilter f
 		it := txn.NewIterator(opts)
 		defer it.Close()
 
-		prefixBuf := []byte("s" + prefix) // only string key available for prefix search
-		for it.Seek(prefixBuf); it.ValidForPrefix(prefixBuf); it.Next() {
+		pfxBuf := []byte("s" + prefix) // only string key available for prefix search
+		for it.Seek(pfxBuf); it.ValidForPrefix(pfxBuf); it.Next() {
 			item := it.Item()
 			k := item.Key()
 			if err := item.Value(func(v []byte) error {

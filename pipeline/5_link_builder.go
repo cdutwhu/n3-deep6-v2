@@ -27,16 +27,16 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 	mIdVer.Range(func(id string, ver int64) bool {
 		// fmt.Println("\nID:", id)
 
-		prefix := fmt.Sprintf("lc-spo|%s|", id)
-		fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, func(k string, v int64) bool { return v == ver })
+		pfx := fmt.Sprintf("lc-spo|%s|", id)
+		fdBuf, _ := dbset.BadgerSearchByPfx(db, pfx, func(k string, v int64) bool { return v == ver })
 
 		for k := range fdBuf {
 			t := dd.ParseTripleLinkCandidate(k)
 			// fmt.Printf("Link Value: %s\n", t.O)
 
 			if foreignKeyVal := t.O; len(foreignKeyVal) > 0 {
-				prefix := fmt.Sprintf("ops|%s|", foreignKeyVal)
-				fdBuf, _ := dbset.BadgerSearchByPrefix(db, prefix, FnVerActive)
+				pfx := fmt.Sprintf("ops|%s|", foreignKeyVal)
+				fdBuf, _ := dbset.BadgerSearchByPfx(db, pfx, FnVerActive)
 
 				for k := range fdBuf {
 					t := dd.ParseTripleData(k)

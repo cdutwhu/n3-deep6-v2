@@ -6,10 +6,10 @@ require (
 	github.com/BurntSushi/toml v0.4.1
 	github.com/dgraph-io/badger/v3 v3.2103.1
 	github.com/digisan/gotk v0.0.33
-	github.com/digisan/json-tool v0.0.10
+	github.com/digisan/json-tool v0.0.12
 	github.com/nats-io/nuid v1.0.1
 	github.com/pkg/errors v0.9.1
-	github.com/tidwall/gjson v1.8.1
+	github.com/tidwall/gjson v1.9.0
 )
 
 require (
@@ -29,10 +29,10 @@ require (
 	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/tidwall/match v1.0.3 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
-	github.com/tidwall/sjson v1.1.7 // indirect
+	github.com/tidwall/sjson v1.2.1 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
-	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	golang.org/x/net v0.0.0-20210908191846-a5e095526f91 // indirect
+	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
