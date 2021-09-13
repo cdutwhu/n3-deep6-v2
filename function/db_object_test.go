@@ -102,7 +102,7 @@ func TestGetIDbyX(t *testing.T) {
 	defer db.Close()
 
 	type args struct {
-		arg   string
+		arg   FindMethod
 		db    *badger.DB
 		types []string
 	}
@@ -115,7 +115,7 @@ func TestGetIDbyX(t *testing.T) {
 		{
 			name: "GetIDsByType",
 			args: args{
-				arg: "Type",
+				arg: Type,
 				db:  db,
 				types: []string{
 					"XAPI",
@@ -130,7 +130,7 @@ func TestGetIDbyX(t *testing.T) {
 		{
 			name: "GetIDsByValue",
 			args: args{
-				arg: "Value",
+				arg: Value,
 				db:  db,
 				types: []string{
 					"marjorie45@trashymail.com",
@@ -141,7 +141,7 @@ func TestGetIDbyX(t *testing.T) {
 		{
 			name: "GetIDsByPredicate",
 			args: args{
-				arg: "Predicate",
+				arg: Predicate,
 				db:  db,
 				types: []string{
 					"TeachingGroup.ShortName",

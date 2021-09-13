@@ -8,7 +8,7 @@ import (
 	jt "github.com/digisan/json-tool"
 )
 
-func FindByX(byWhat string, db *badger.DB, arg string) (ret []string) {
+func FindByX(byWhat FindMethod, db *badger.DB, arg string) (ret []string) {
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()

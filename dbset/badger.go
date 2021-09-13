@@ -127,7 +127,7 @@ func SyncFromBadger(kv impl.Ikv, db *badger.DB, vFilter func(k, v interface{}) b
 	})
 }
 
-func BadgerSearchByKey(db *badger.DB, key string, vFilter func(k string, v int64) bool) (map[string]int64, error) {
+func BadgerFindByKey(db *badger.DB, key string, vFilter func(k string, v int64) bool) (map[string]int64, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db is nil, found nothing")
 	}
@@ -184,7 +184,7 @@ func SyncFromBadgerByKey(kv impl.Ikv, db *badger.DB, key string, vFilter func(k 
 	})
 }
 
-func BadgerSearchByPfx(db *badger.DB, prefix string, vFilter func(k string, v int64) bool) (map[string]int64, error) {
+func BadgerFindByPfx(db *badger.DB, prefix string, vFilter func(k string, v int64) bool) (map[string]int64, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db is nil, found nothing")
 	}

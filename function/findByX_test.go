@@ -20,7 +20,7 @@ func TestFindByType(t *testing.T) {
 	defer db.Close()
 
 	type args struct {
-		byWhat string
+		byWhat FindMethod
 		db     *badger.DB
 		arg    string
 	}
@@ -33,7 +33,7 @@ func TestFindByType(t *testing.T) {
 		{
 			name: "FindByType",
 			args: args{
-				byWhat: "Type",
+				byWhat: Type,
 				db:     db,
 				arg:    "StudentPersonal",
 				// "Syllabus",
@@ -49,7 +49,7 @@ func TestFindByType(t *testing.T) {
 		{
 			name: "FindByValue",
 			args: args{
-				byWhat: "Value",
+				byWhat: Value,
 				db:     db,
 				arg:    "Mathematics",
 			},
@@ -58,7 +58,7 @@ func TestFindByType(t *testing.T) {
 		{
 			name: "FindByPredicate",
 			args: args{
-				byWhat: "Predicate",
+				byWhat: Predicate,
 				db:     db,
 				arg:    "StudentPersonal.LocalId",
 			},

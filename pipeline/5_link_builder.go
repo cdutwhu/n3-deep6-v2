@@ -28,7 +28,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 		// fmt.Println("\nID:", id)
 
 		pfx := fmt.Sprintf("lc-spo|%s|", id)
-		fdBuf, _ := dbset.BadgerSearchByPfx(db, pfx, func(k string, v int64) bool { return v == ver })
+		fdBuf, _ := dbset.BadgerFindByPfx(db, pfx, func(k string, v int64) bool { return v == ver })
 
 		for k := range fdBuf {
 			t := dd.ParseTripleLinkCandidate(k)
@@ -36,7 +36,7 @@ func LinkBuilder(db *badger.DB, wb *badger.WriteBatch) {
 
 			if foreignKeyVal := t.O; len(foreignKeyVal) > 0 {
 				pfx := fmt.Sprintf("ops|%s|", foreignKeyVal)
-				fdBuf, _ := dbset.BadgerSearchByPfx(db, pfx, FnVerActive)
+				fdBuf, _ := dbset.BadgerFindByPfx(db, pfx, FnVerActive)
 
 				for k := range fdBuf {
 					t := dd.ParseTripleData(k)

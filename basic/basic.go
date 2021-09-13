@@ -105,7 +105,7 @@ func MapAllId(db *badger.DB, inclInactive bool) (mIdVer *impl.SM, err error) {
 		filter = nil // all version
 	}
 
-	m, err := dbset.BadgerSearchByPfx(db, pfxId, filter)
+	m, err := dbset.BadgerFindByPfx(db, pfxId, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func CurVer(id string, mIdVer *impl.SM, db *badger.DB) (int64, error) {
 	}
 
 	key := id4v(id)
-	mIdVerBuf, err := dbset.BadgerSearchByKey(db, key, FnVerActive) // active version
+	mIdVerBuf, err := dbset.BadgerFindByKey(db, key, FnVerActive) // active version
 	if err != nil {
 		return -1, err
 	}
@@ -166,7 +166,7 @@ func InactiveCheck(id string, mIdVer *impl.SM, db *badger.DB) bool {
 	}
 
 	key := id4v(id)
-	mIdVerBuf, err := dbset.BadgerSearchByKey(db, key, FnVerInactive) // inactive version
+	mIdVerBuf, err := dbset.BadgerFindByKey(db, key, FnVerInactive) // inactive version
 	if err == nil {
 		if _, ok := mIdVerBuf[key]; ok {
 			return true
@@ -255,7 +255,7 @@ func CleanupErased(db *badger.DB) error {
 		fmt.Println("\nCould be real erased in database:", id)
 
 		for _, pfx := range pfxAll {
-			mIdVerBuf, err := dbset.BadgerSearchByPfx(db, pfx, func(k string, v int64) bool {
+			mIdVerBuf, err := dbset.BadgerFindByPfx(db, pfx, func(k string, v int64) bool {
 				return strings.Contains(k, "|"+id)
 			})
 			if err != nil {

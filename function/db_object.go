@@ -15,23 +15,32 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GetIDbyX(byWhat string, db *badger.DB, args ...string) map[string][]string {
+type FindMethod uint8
+
+const (
+	ID        FindMethod = 0
+	Type      FindMethod = 1
+	Value     FindMethod = 2
+	Predicate FindMethod = 3
+)
+
+func GetIDbyX(byWhat FindMethod, db *badger.DB, args ...string) map[string][]string {
 	ret := make(map[string][]string)
 	pfx := ""
 	for _, arg := range ts.MkSet(args...) {
 
 		switch byWhat {
-		case "TYPE", "Type", "type":
+		case Type:
 			pfx = fmt.Sprintf("pos|is-a|%s|", arg)
-		case "VALUE", "Value", "value":
+		case Value:
 			pfx = fmt.Sprintf("osp|%s|", arg)
-		case "PREDICATE", "Predicate", "predicate":
-			pfx = fmt.Sprintf("pso|%s", arg)
+		case Predicate:
+			pfx = fmt.Sprintf("pso|%s|", arg)
 		default:
 			panic(fmt.Sprintf("Unsupported 'byWhat'@ %v", byWhat))
 		}
 
-		m, err := dbset.BadgerSearchByPfx(db, pfx, nil)
+		m, err := dbset.BadgerFindByPfx(db, pfx, nil)
 		if err != nil {
 			continue
 		}
@@ -46,7 +55,7 @@ func GetIDbyX(byWhat string, db *badger.DB, args ...string) map[string][]string 
 	return ret
 }
 
-func JsonFromDBbyX(byWhat string, ctx context.Context, db *badger.DB, args ...string) (
+func JsonFromDBbyX(byWhat FindMethod, ctx context.Context, db *badger.DB, args ...string) (
 	<-chan string,
 	<-chan error,
 	error) {
@@ -86,7 +95,7 @@ func JsonFromDB(ctx context.Context, db *badger.DB, ids ...string) (
 
 			ver, _ := mIdVer.Get(id)
 			pfx := fmt.Sprintf("spo|%s|", id)
-			m, err := dbset.BadgerSearchByPfx(db, pfx, func(k string, v int64) bool { return v == ver })
+			m, err := dbset.BadgerFindByPfx(db, pfx, func(k string, v int64) bool { return v == ver })
 			if err != nil {
 				cErr <- err
 				continue
